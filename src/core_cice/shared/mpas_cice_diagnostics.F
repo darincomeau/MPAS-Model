@@ -27,7 +27,8 @@ module cice_diagnostics
        cice_initialize_time_diagnostics, &
        cice_set_time_diagnostics, &
        cice_check_state, &
-       cice_set_testing_system_test_arrays
+       cice_set_testing_system_test_arrays, &
+       cice_load_balance_timers
 
 contains
 
@@ -488,6 +489,52 @@ contains
 
   end subroutine cice_set_testing_system_test_arrays
 
+!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+!
+!  cice_load_balance_timers
+!
+!> \brief Time load in-balance
+!> \author Adrian K. Turner, LANL
+!> \date 12th December 2017
+!> \details
+!  Add a call to MPI_Barrier to allow timing of load imbalance
+!
 !-----------------------------------------------------------------------
+
+  subroutine cice_load_balance_timers(domain, label)
+
+#ifdef _MPI
+#ifndef NOMPIMOD
+   use mpi
+#endif
+#endif
+   use mpas_timer
+
+    type(domain_type), intent(in) :: &
+         domain
+
+    character(len=*), intent(in) :: &
+         label
+
+#ifdef _MPI
+
+    logical, pointer :: &
+         config_load_balance_timers
+
+    integer :: &
+         mpi_ierr
+
+    call MPAS_pool_get_config(domain % configs, "config_load_balance_timers", config_load_balance_timers)
+    if (config_load_balance_timers) then
+       call mpas_timer_start("halo barrier "//trim(label))
+       call MPI_Barrier(domain % dminfo % comm, mpi_ierr)
+       call mpas_timer_stop("halo barrier "//trim(label))
+    endif
+
+#endif
+
+  end subroutine cice_load_balance_timers
+
+  !-----------------------------------------------------------------------
 
 end module cice_diagnostics

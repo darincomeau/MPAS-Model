@@ -172,6 +172,8 @@ contains
 
     use mpas_rbf_interpolation, only: mpas_rbf_interp_initialize
     use mpas_vector_reconstruction, only: mpas_init_reconstruct
+    use cice_advection_incremental_remap_tracers, only: &
+         cice_init_update_tracer_halo_exch_group
 
     use cice_advection_incremental_remap_tracers, only: &
          iceTracersHead
@@ -285,6 +287,9 @@ contains
 
     ! construct a linked list of tracers for sea ice
     call cice_add_ice_tracers_to_linked_list(domain, iceTracersHead)
+
+    ! set up halo exchange group
+    call cice_init_update_tracer_halo_exch_group(iceTracersHead, domain)
 
     ! assign pointers
     block => domain % blocklist
@@ -2350,6 +2355,9 @@ contains
 
     use mpas_dmpar
 
+    use cice_diagnostics, only: &
+         cice_load_balance_timers
+
     type (domain_type), intent(inout) :: &
          domain    !< Input/Output: domain info
 
@@ -2371,7 +2379,9 @@ contains
 
     ! Local variables
 
-    integer :: timeLevel    ! time level of input fields (1 or 2)
+    integer :: &
+         timeLevel, & ! time level of input fields (1 or 2)
+         ierrHalo     ! error code for aggregated haslo exchange
 
     logical :: &
          updateHaloInit,   & ! if true, do initial halo updates for velocity, mass and tracer fields
@@ -2390,8 +2400,11 @@ contains
          workCategoryCell        ! work array with dimension(nCategories,nCells)
 
     logical, pointer :: &
-         configConservationCheck, & ! namelist configuration whether perform conservation check
-         configMonotonicityCheck    ! namelist configuration whether perform monotonicity check
+         configConservationCheck, &    ! namelist configuration whether perform conservation check
+         configMonotonicityCheck, &    ! namelist configuration whether perform monotonicity check
+         config_use_halo_exch, &       ! perform halo exchanges
+         config_aggregate_halo_exch, & ! perform aggregated halo exchanges
+         config_reuse_halo_exch        ! reuse halo exchange cell lists
 
     ! dynamics time step
     real(kind=RKIND), pointer :: &
@@ -2437,6 +2450,8 @@ contains
 
        if (verboseRun) call mpas_log_write('Doing initial halo updates for velocity, mass and tracers')
 
+       call cice_load_balance_timers(domain, "advection before")
+
        call mpas_timer_start("incr remap init halo")
 
        ! velocity
@@ -2444,6 +2459,43 @@ contains
        ! open to improvement
        call MPAS_dmpar_field_halo_exch(domain, 'u' // trim(tracersHead % rootName) // 'Velocity')
        call MPAS_dmpar_field_halo_exch(domain, 'v' // trim(tracersHead % rootName) // 'Velocity')
+       call MPAS_pool_get_config(domain % configs, "config_use_halo_exch", config_use_halo_exch)
+       if (config_use_halo_exch) then
+
+          call MPAS_pool_get_config(domain % configs, "config_aggregate_halo_exch", config_aggregate_halo_exch)
+          if (config_aggregate_halo_exch) then
+
+             ! aggregated halo exchange
+             call MPAS_pool_get_config(domain % configs, "config_reuse_halo_exch", config_reuse_halo_exch)
+             if (.not. config_reuse_halo_exch) then
+
+                ! without reuse
+                call mpas_dmpar_exch_group_full_halo_exch(domain, 'velocityHaloExchangeGroup', iErr=ierrHalo)
+                if (ierrHalo /= MPAS_DMPAR_NOERR) then
+                   call MPAS_log_write("failure to perform halo exchange for velocityHaloExchangeGroup", MPAS_LOG_CRIT)
+                endif
+
+             else
+
+                ! with reuse
+                call mpas_dmpar_exch_group_reuse_halo_exch(domain, 'velocityHaloExchangeGroup', iErr=ierr)
+                if (ierr /= MPAS_DMPAR_NOERR) then
+                   call MPAS_log_write("failure to perform reuse halo exchange for velocityHaloExchangeGroup", MPAS_LOG_CRIT)
+                endif
+
+             endif ! config_reuse_halo_exch
+
+          else
+
+             ! no aggregated halo exchange
+             call MPAS_dmpar_field_halo_exch(domain, 'uVelocity')
+             call MPAS_dmpar_field_halo_exch(domain, 'vVelocity')
+
+          endif ! config_aggregate_halo_exch
+
+       endif ! config_use_halo_exch
+
+       call cice_load_balance_timers(domain, "advection after")
 
        ! mass and tracers
        call cice_update_tracer_halo(tracersHead, domain, timeLevel)
