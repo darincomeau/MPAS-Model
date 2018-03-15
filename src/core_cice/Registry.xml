@@ -54,6 +54,10 @@
 		/>
 		<dim name="nBergCategories"
 		/>
+		<dim name="nBergSubcycleNumber"
+			definition="namelist:config_berg_velocity_subcycle_number"
+			description="The number of subcycle steps in iceberg velocity solver."
+		/>
 		<dim name="nHemispheres"
 			definition="3"
 			description="The number of hemispheres (global, north, south)."
@@ -1670,7 +1674,7 @@
 		<nml_option name="config_berg_initial_uvelocity_geo"	type="real"		default_value="0.0"/>
 		<nml_option name="config_berg_initial_vvelocity_geo"	type="real"		default_value="0.0"/>
 		<nml_option name="config_use_berg_velocity_solver"	type="logical"		default_value="false"/>
-		<nml_option name="config_berg_dynamics_subcycle_number"		type="integer"		default_value="15"		possible_values="any positive integer"/>
+		<nml_option name="config_berg_velocity_subcycle_number"		type="integer"		default_value="15"		possible_values="any positive integer"/>
 		<nml_option name="config_berg_ice_concentration_threshold"	type="real"		default_value="0.9"/>
 		<nml_option name="config_berg_ice_min_concentration_threshold"	type="real"		default_value="0.15"/>
 		<nml_option name="config_berg_ice_strength_threshold"		type="real"		default_value="1000.0"/>
@@ -1682,6 +1686,7 @@
 		<nml_option name="config_specific_heat_fresh_ice" type="real" default_value="2106.0"	units="J/kg/K"/>
 		<nml_option name="config_berg_allow_rollover"			type="logical"		default_value="false"/>
 		<nml_option name="config_use_berg_advection"			type="logical"		default_value="false"/>
+		<nml_option name="config_berg_advection_outside_velocity_subcycling"			type="logical"		default_value="true"/>
 		<nml_option name="config_berg_update_open_water"       type="logical"    default_value="false"/>
 		<nml_option name="config_berg_seaice_interaction"       type="logical"    default_value="false"/>
 	</nml_record>
@@ -3970,13 +3975,16 @@
 
 	<!-- iceberg velocity solver -->
 	<var_struct name="berg_velocity_solver" time_levs="1" packages="pkgBergs">
-		<var name="bergDynamicsTimeStep"		type="real"		dimensions=""								name_in_code="bergDynamicsTimeStep"			units="s"		packages="pkgBergs"/>
+		<var name="bergVelocityTimeStep"		type="real"		dimensions=""								name_in_code="bergVelocityTimeStep"			units="s"		packages="pkgBergs"/>
+		<var name="bergAdvectionTimeStep"		type="real"		dimensions=""								name_in_code="bergAdvectionTimeStep"			units="s"		packages="pkgBergs"/>
 		<var name="uBergVelocity"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="uBergVelocity"				units="m/s"		packages="pkgBergs"/>
 		<var name="vBergVelocity"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="vBergVelocity"				units="m/s"		packages="pkgBergs"/>
 		<var name="uBergVelocityCell"			type="real"		dimensions="nBergCategories nCells Time"	name_in_code="uBergVelocityCell"			units="m/s"		packages="pkgBergs"/>
 		<var name="vBergVelocityCell"			type="real"		dimensions="nBergCategories nCells Time"	name_in_code="vBergVelocityCell"			units="m/s"		packages="pkgBergs"/>
 		<var name="uBergVelocityInitial"		type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="uBergVelocityInitial"			units="m/s"		packages="pkgBergs"/>
 		<var name="vBergVelocityInitial"		type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="vBergVelocityInitial"			units="m/s"		packages="pkgBergs"/>
+		<var name="uBergVelocitySubcycle"		type="real"		dimensions="nBergSubcycleNumber nBergCategories nVertices Time"	name_in_code="uBergVelocitySubcycle"			units="m/s"		packages="pkgBergs"/>
+		<var name="vBergVelocitySubcycle"		type="real"		dimensions="nBergSubcycleNumber nBergCategories nVertices Time"	name_in_code="vBergVelocitySubcycle"			units="m/s"		packages="pkgBergs"/>
 		<var name="bergMassVertex"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergMassVertex"				units="kg"		packages="pkgBergs"/>
 		<var name="bergVelocityMask"			type="integer"	dimensions="nBergCategories nVertices Time"	name_in_code="bergVelocityMask"				units="1"		packages="pkgBergs"/>
 		<var name="bergDraft"					type="real"		dimensions="nBergCategories nCells Time"	name_in_code="bergDraft"					units="m"		packages="pkgBergs"/>
