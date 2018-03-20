@@ -168,7 +168,7 @@ contains
 
           ! berg velocity solver
           call mpas_timer_start("Berg velocity solver")
-          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock, iBergSubcycle)
+          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
           call mpas_timer_stop("Berg velocity solver")
 
        enddo ! iBergSubcycle
@@ -184,7 +184,7 @@ contains
 
           ! berg velocity solver
           call mpas_timer_start("Berg velocity solver")
-          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock, iBergSubcycle)
+          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
           call mpas_timer_stop("Berg velocity solver")
 
           ! advection by incremental remapping

@@ -248,16 +248,13 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_velocity_solver(domain, clock, iBergSubcycle)
+  subroutine cice_run_berg_velocity_solver(domain, clock)
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
 
     type(MPAS_Clock_type), intent(in) :: &
          clock !< Input:
-
-    integer, intent(in) :: &
-         iBergSubcycle !< Input:
 
      character(len=strKIND), pointer :: &
          config_berg_velocity_solver_type
@@ -287,7 +284,7 @@ contains
        call mpas_timer_stop("Calculate berg forcing terms")
 
        call mpas_timer_start("Berg velocity solver compute")
-       call solve_berg_velocity_forward_euler(domain, iBergSubcycle)
+       call solve_berg_velocity_forward_euler(domain)
        call mpas_timer_stop("Berg velocity solver compute")
 
     else
@@ -1584,16 +1581,13 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine solve_berg_velocity_forward_euler(domain, iBergSubcycle)
+  subroutine solve_berg_velocity_forward_euler(domain)
 
     use cice_constants, only: &
          cicePuny
 
     type(domain_type), intent(inout) :: &
          domain
-
-    integer, intent(in) :: &
-         iBergSubcycle ! subcycling index
 
     type(block_type), pointer :: &
          block
