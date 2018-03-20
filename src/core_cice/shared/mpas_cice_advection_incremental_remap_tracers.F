@@ -1301,7 +1301,7 @@ contains
           thisTracer % uVelocity => tracerField2DReal % array(iCategory,:)
           call MPAS_pool_get_field(tracerVelocityPool, 'vBergVelocity', tracerField2DReal)
           thisTracer % vVelocity => tracerField2DReal % array(iCategory,:)
-          call MPAS_pool_get_array(tracerVelocityPool, 'bergDynamicsTimeStep', timeStep)
+          call MPAS_pool_get_array(tracerVelocityPool, 'bergAdvectionTimeStep', timeStep)
           thisTracer % advectionTimeStep => timeStep
 
        endif
