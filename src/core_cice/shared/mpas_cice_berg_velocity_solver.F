@@ -1739,7 +1739,6 @@ contains
              vBergVelocityInitial(iCategory,iVertex) = vBergVelocity(iCategory,iVertex)
 
              ! store for berg subcycling
-             ! dcnote - need to initialize, would prefer to be local variable
              uBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex) = uBergVelocity(iCategory,iVertex)
              vBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex) = vBergVelocity(iCategory,iVertex)
 
