@@ -1789,6 +1789,9 @@ contains
     integer, pointer :: &
          config_berg_velocity_subcycle_number ! berg subcycling number
 
+     character(len=strKIND), pointer :: &
+         config_berg_velocity_average_type        
+
     integer, pointer :: &
          nVerticesSolve, &
          nBergCategories
@@ -1808,6 +1811,7 @@ contains
     do while (associated(block))
 
        call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
+       call MPAS_pool_get_config(block % configs, "config_berg_velocity_average_type", config_berg_velocity_average_type)       
 
        call MPAS_pool_get_dimension(block % dimensions, "nVerticesSolve", nVerticesSolve)
        call MPAS_pool_get_dimension(block % dimensions, "nBergCategories", nBergCategories)
@@ -1826,32 +1830,49 @@ contains
 
              do iCategory = 1, nBergCategories
 
-                uBergVelocitySum = 0.0_RKIND
-                vBergVelocitySum = 0.0_RKIND
-                bergVelocityMag = 0.0_RKIND
-                bergVelocityAng = 0.0_RKIND
+                if (trim(config_berg_velocity_average_type) == "last_calculated") then
 
-                ! averages of vector components
-                uBergVelocitySum = sum(uBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
-                vBergVelocitySum = sum(vBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
+                   ! no change - not necessary
+                   bergVelocityMag = 0.0_RKIND
+                   bergVelocityAng = 0.0_RKIND                   
+                   ! uBergVelocity(iCategory, iVertex) = uBergVelocitySubcycle(config_berg_velocity_subcycle_number, iCategory, iVertex)
+                   ! vBergVelocity(iCategory, iVertex) = vBergVelocitySubcycle(config_berg_velocity_subcycle_number, iCategory, iVertex) 
 
-                ! average angle of velocity vector
-                bergVelocityAng = atan2(vBergVelocitySum , uBergVelocitySum)
+                elseif (trim(config_berg_velocity_average_type) == "average_components") then
 
-                ! average magnitudes of velocities
-                do iBergSubcycle = 1, config_berg_velocity_subcycle_number
+                   uBergVelocity = sum(uBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
+                   vbergVelocity = sum(vBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
 
-                   bergVelocityMag = bergVelocityMag + &
-                                     sqrt(uBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2 + &
-                                          vBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2)
+                elseif (trim(config_berg_velocity_average_type) == "average_magnitude") then
 
-                enddo
+                   uBergVelocitySum = 0.0_RKIND
+                   vBergVelocitySum = 0.0_RKIND
+                   bergVelocityMag = 0.0_RKIND
+                   bergVelocityAng = 0.0_RKIND
 
-                bergVelocityMag = bergVelocityMag / config_berg_velocity_subcycle_number
+                   ! averages of vector components
+                   uBergVelocitySum = sum(uBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
+                   vBergVelocitySum = sum(vBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
 
-                ! vector average velocities
-                uBergVelocity(iCategory, iVertex) = bergVelocityMag * cos(bergVelocityAng)
-                vBergVelocity(iCategory, iVertex) = bergVelocityMag * sin(bergVelocityAng)
+                   ! average angle of velocity vector
+                   bergVelocityAng = atan2(vBergVelocitySum , uBergVelocitySum)
+
+                   ! average magnitudes of velocities
+                   do iBergSubcycle = 1, config_berg_velocity_subcycle_number
+
+                      bergVelocityMag = bergVelocityMag + &
+                                        sqrt(uBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2 + &
+                                             vBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2)
+
+                   enddo
+
+                   bergVelocityMag = bergVelocityMag / config_berg_velocity_subcycle_number
+
+                   ! vector average velocities
+                   uBergVelocity(iCategory, iVertex) = bergVelocityMag * cos(bergVelocityAng)
+                   vBergVelocity(iCategory, iVertex) = bergVelocityMag * sin(bergVelocityAng)                         
+
+                endif ! 
 
              enddo ! iCategory
 

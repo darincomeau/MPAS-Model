@@ -174,10 +174,15 @@ contains
 
        enddo ! iBergSubcycle
 
+       ! average velocities calculated over subcycling
+       call mpas_timer_start("Berg velocity averaging")
+       if (config_use_berg_velocity_solver) call cice_berg_average_velocities(domain)
+       call mpas_timer_stop("Berg velocity averaging")     
+
        ! advection by incremental remapping
        call mpas_timer_start("Berg advection")
        if (config_use_berg_advection) call cice_run_berg_advection(domain, clock, ierr)
-       call mpas_timer_stop("Berg advection")
+       call mpas_timer_stop("Berg advection")  
 
     else ! advection inside subcycling
 
@@ -195,12 +200,12 @@ contains
 
        enddo ! iBergSubcycle
 
-    endif ! config_berg_advection_outside_velocity_subcycling
-
     ! average velocities calculated over subcycling
     call mpas_timer_start("Berg velocity averaging")
     if (config_use_berg_velocity_solver) call cice_berg_average_velocities(domain)
-    call mpas_timer_stop("Berg velocity averaging")
+    call mpas_timer_stop("Berg velocity averaging")       
+
+    endif ! config_berg_advection_outside_velocity_subcycling
 
   end subroutine cice_run_berg_dynamics
 

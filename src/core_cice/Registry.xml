@@ -1689,6 +1689,7 @@
 		<nml_option name="config_berg_advection_outside_velocity_subcycling"			type="logical"		default_value="true"/>
 		<nml_option name="config_berg_update_open_water"       type="logical"    default_value="false"/>
 		<nml_option name="config_berg_seaice_interaction"       type="logical"    default_value="false"/>
+		<nml_option name="config_berg_velocity_average_type"	type="character"	default_value="last_calculated"		possible_values="'last_calculated' or 'average_components' or 'average_magnitude'"/>		
 	</nml_record>
 
 	<streams>
