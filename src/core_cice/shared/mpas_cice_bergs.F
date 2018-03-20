@@ -131,8 +131,7 @@ contains
   subroutine cice_run_berg_dynamics(domain, clock, ierr)
 
     use cice_berg_velocity_solver, only: &
-         cice_run_berg_velocity_solver, &
-         cice_berg_average_velocities
+         cice_run_berg_velocity_solver
 
     use cice_berg_advection, only: &
          cice_run_berg_advection
@@ -196,11 +195,6 @@ contains
        enddo ! iBergSubcycle
 
     endif ! config_berg_advection_outside_velocity_subcycling
-
-    ! average velocities calculated over subcycling
-    call mpas_timer_start("Berg velocity averaging")
-    if (config_use_berg_velocity_solver) call cice_berg_average_velocities(domain)
-    call mpas_timer_stop("Berg velocity averaging")
 
   end subroutine cice_run_berg_dynamics
 

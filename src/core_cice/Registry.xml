@@ -54,10 +54,6 @@
 		/>
 		<dim name="nBergCategories"
 		/>
-		<dim name="nBergSubcycleNumber"
-			definition="namelist:config_berg_velocity_subcycle_number"
-			description="The number of subcycle steps in iceberg velocity solver."
-		/>
 		<dim name="nHemispheres"
 			definition="3"
 			description="The number of hemispheres (global, north, south)."
@@ -3983,8 +3979,6 @@
 		<var name="vBergVelocityCell"			type="real"		dimensions="nBergCategories nCells Time"	name_in_code="vBergVelocityCell"			units="m/s"		packages="pkgBergs"/>
 		<var name="uBergVelocityInitial"		type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="uBergVelocityInitial"			units="m/s"		packages="pkgBergs"/>
 		<var name="vBergVelocityInitial"		type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="vBergVelocityInitial"			units="m/s"		packages="pkgBergs"/>
-		<var name="uBergVelocitySubcycle"		type="real"		dimensions="nBergSubcycleNumber nBergCategories nVertices Time"	name_in_code="uBergVelocitySubcycle"			units="m/s"		packages="pkgBergs"/>
-		<var name="vBergVelocitySubcycle"		type="real"		dimensions="nBergSubcycleNumber nBergCategories nVertices Time"	name_in_code="vBergVelocitySubcycle"			units="m/s"		packages="pkgBergs"/>
 		<var name="bergMassVertex"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergMassVertex"				units="kg"		packages="pkgBergs"/>
 		<var name="bergVelocityMask"			type="integer"	dimensions="nBergCategories nVertices Time"	name_in_code="bergVelocityMask"				units="1"		packages="pkgBergs"/>
 		<var name="bergDraft"					type="real"		dimensions="nBergCategories nCells Time"	name_in_code="bergDraft"					units="m"		packages="pkgBergs"/>

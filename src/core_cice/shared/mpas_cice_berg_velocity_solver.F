@@ -31,7 +31,6 @@ module cice_berg_velocity_solver
   public :: &
        cice_init_berg_velocity_solver, &
        cice_run_berg_velocity_solver, &
-       cice_berg_average_velocities, &
        cice_berg_forcing_for_ice
 
   ! berg velocity solver constants
@@ -346,10 +345,6 @@ contains
          bergCoefTltU, & ! sea surface tilt forcing term (kg*m/s^2)
          bergCoefTltV
 
-    real(kind=RKIND), dimension(:,:,:), pointer :: &
-         uBergVelocitySubcycle, & ! berg velocity
-         vBergVelocitySubcycle
-
     integer, pointer :: &
          nVerticesSolve, &
          nBergCategories
@@ -370,8 +365,6 @@ contains
        call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocity", vBergVelocity)
        call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocityInitial", uBergVelocityInitial)
        call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocityInitial", vBergVelocityInitial)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocitySubcycle", uBergVelocitySubcycle)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocitySubcycle", vBergVelocitySubcycle)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergCoefAtmU", bergCoefAtmU)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergCoefAtmV", bergCoefAtmV)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergCoefOcnU", bergCoefOcnU)
@@ -390,8 +383,6 @@ contains
              ! store berg velocities at beginning of timestep
              uBergVelocityInitial(iCategory,iVertex) = uBergVelocity(iCategory,iVertex)
              vBergVelocityInitial(iCategory,iVertex) = vBergVelocity(iCategory,iVertex)
-             uBergVelocitySubcycle(:,iCategory,iVertex) = 0.0_RKIND
-             vBergVelocitySubcycle(:,iCategory,iVertex) = 0.0_RKIND
              bergCoefAtmU(iCategory,iVertex) = 0.0_RKIND
              bergCoefAtmV(iCategory,iVertex) = 0.0_RKIND
              bergCoefOcnU(iCategory,iVertex) = 0.0_RKIND
@@ -1628,10 +1619,6 @@ contains
          bergCoefTltU, & ! sea surface tilt forcing term (kg*m/s^2)
          bergCoefTltV
 
-    real(kind=RKIND), dimension(:,:,:), pointer :: &
-         uBergVelocitySubcycle, & ! berg velocity (m/s)
-         vBergVelocitySubcycle
-
     integer, dimension(:,:), pointer :: &
          bergVelocityMask  ! mask = 1 indicates berg velocity should be calculated, = 0 elsewhere
 
@@ -1667,8 +1654,6 @@ contains
        call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocity", vBergVelocity)
        call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocityInitial", uBergVelocityInitial)
        call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocityInitial", vBergVelocityInitial)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocitySubcycle", uBergVelocitySubcycle)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocitySubcycle", vBergVelocitySubcycle)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityMask", bergVelocityMask)
        call MPAS_pool_get_array(bergVelocitySolverPool, "oneBergMassVertex", oneBergMassVertex)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergCoefAtmU", bergCoefAtmU)
@@ -1738,10 +1723,6 @@ contains
              uBergVelocityInitial(iCategory,iVertex) = uBergVelocity(iCategory,iVertex)
              vBergVelocityInitial(iCategory,iVertex) = vBergVelocity(iCategory,iVertex)
 
-             ! store for berg subcycling
-             uBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex) = uBergVelocity(iCategory,iVertex)
-             vBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex) = vBergVelocity(iCategory,iVertex)
-
           enddo ! iCategory
 
        enddo ! iVertex
@@ -1750,120 +1731,6 @@ contains
     enddo
 
   end subroutine solve_berg_velocity_forward_euler!}}}
-
-!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
-!
-!  cice_berg_average_velocities
-!
-!> \brief   Calculate average iceberg velocities
-!> \author  Darin Comeau, LANL
-!> \date    Mar 14, 2018
-!> \details This subroutine calculates the vector average of iceberg
-!> velocities calculated during subcycling.
-!
-!-----------------------------------------------------------------------
-
-  subroutine cice_berg_average_velocities(domain)
-
-    type(domain_type), intent(inout) :: &
-         domain
-
-    type(block_type), pointer :: &
-         block
-
-    type(MPAS_pool_type), pointer :: &
-         bergVelocitySolverPool
-
-    real(kind=RKIND), dimension(:,:), pointer :: &
-         uBergVelocity, & ! berg velocity (m/s)
-         vBergVelocity
-
-    real(kind=RKIND), dimension(:,:,:), pointer :: &
-         uBergVelocitySubcycle, & ! berg velocity (m/s)
-         vBergVelocitySubcycle
-
-    integer, dimension(:,:), pointer :: &
-         bergVelocityMask  ! mask = 1 indicates berg velocity should be calculated, = 0 elsewhere
-
-    integer, pointer :: &
-         config_berg_velocity_subcycle_number ! berg subcycling number
-
-    integer, pointer :: &
-         nVerticesSolve, &
-         nBergCategories
-
-    integer :: &
-         iVertex, &
-         iCategory, &
-         iBergSubcycle
-
-    real(kind=RKIND) :: &
-         bergVelocityMag, & ! berg velocity magnitude
-         bergVelocityAng, &    ! and angle (for vector averaging)
-         uBergVelocitySum, &
-         vBergVelocitySum
-
-    block => domain % blocklist
-    do while (associated(block))
-
-       call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
-
-       call MPAS_pool_get_dimension(block % dimensions, "nVerticesSolve", nVerticesSolve)
-       call MPAS_pool_get_dimension(block % dimensions, "nBergCategories", nBergCategories)
-
-       call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
-
-       call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocity", uBergVelocity)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocity", vBergVelocity)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocitySubcycle", uBergVelocitySubcycle)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocitySubcycle", vBergVelocitySubcycle)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityMask", bergVelocityMask)
-
-       do iVertex = 1, nVerticesSolve
-
-          if (maxval(bergVelocityMask(:,iVertex)) > 0) then
-
-             do iCategory = 1, nBergCategories
-
-                uBergVelocitySum = 0.0_RKIND
-                vBergVelocitySum = 0.0_RKIND
-                bergVelocityMag = 0.0_RKIND
-                bergVelocityAng = 0.0_RKIND
-
-                ! averages of vector components
-                uBergVelocitySum = sum(uBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
-                vBergVelocitySum = sum(vBergVelocitySubcycle(:, iCategory, iVertex)) / config_berg_velocity_subcycle_number
-
-                ! average angle of velocity vector
-                bergVelocityAng = atan2(vBergVelocitySum , uBergVelocitySum)
-
-                ! average magnitudes of velocities
-                do iBergSubcycle = 1, config_berg_velocity_subcycle_number
-
-                   bergVelocityMag = bergVelocityMag + &
-                                     sqrt(uBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2 + &
-                                          vBergVelocitySubcycle(iBergSubcycle, iCategory, iVertex)**2)
-
-                enddo
-
-                bergVelocityMag = bergVelocityMag / config_berg_velocity_subcycle_number
-
-                ! vector average velocities
-                uBergVelocity(iCategory, iVertex) = bergVelocityMag * cos(bergVelocityAng)
-                vBergVelocity(iCategory, iVertex) = bergVelocityMag * sin(bergVelocityAng)
-
-             enddo ! iCategory
-
-          endif ! bergVelocityMask
-
-       enddo ! iVertex
-
-       block => block % next
-    enddo
-
-  end subroutine cice_berg_average_velocities
-
-!-----------------------------------------------------------------------
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
