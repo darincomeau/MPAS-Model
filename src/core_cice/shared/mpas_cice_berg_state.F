@@ -366,11 +366,11 @@ contains
 
           ! check again, abort if still too full
           ! note that once bergAreaCell has been prevented from exceeding 1 due to advection,
-          ! this should never happen, and error type will be changed to MPAS_LOG_ERR
+          ! this should never happen
           if (bergAreaCell(iCell) > 1.0_RKIND) then
 
              call mpas_log_write(&
-             "berg area > 1 after removing calving mass: $r ", realArgs=(/bergAreaCell(iCell)/), &
+             "MAJOR PROBLEM, THIS SHOULD NOT HAPPEN: berg area > 1 after removing calving mass: $r ", realArgs=(/bergAreaCell(iCell)/), &
              messageType=MPAS_LOG_CRIT)
 
           endif
