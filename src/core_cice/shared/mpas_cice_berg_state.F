@@ -319,12 +319,9 @@ contains
              bergMassCategory(iCategory,iCell) = bergMassCategory(iCategory,iCell) &
                                                + bergCalvingMass(iCategory,iCell)
 
-             ! reset calving mass
-             bergCalvingMass(iCategory,iCell) = 0.0_RKIND
+          endif ! bergCalvingMask
 
-          endif
-
-       enddo
+       enddo ! nBergCategories
 
        ! integrated quantities
        bergMassCell(iCell) = sum(bergMassCategory(:,iCell))
@@ -340,7 +337,50 @@ contains
                                      bergAreaCategory(1,:,iCell), &
                                      bergAreaCell(iCell))
 
-       endif
+       endif ! bergCalvingMask
+
+       ! if bergAreaCell > areaCell, remove newly calved mass
+       if (bergAreaCell(iCell) > 1.0_RKIND) then
+
+          call mpas_log_write("bergs: calving mass results in berg area > cell area, $r:, &
+                               moving calving mass back to storage", realArgs=(/bergAreaCell(iCell)/))
+
+          do iCategory = 1, nBergCategories
+
+             ! remove new calving mass
+             bergMassCategory(iCategory,iCell) = bergMassCategory(iCategory,iCell) &
+                                               - bergCalvingMass(iCategory,iCell)
+
+          enddo
+
+          ! recalculate aggregate berg mass & area
+          bergMassCell(iCell) = sum(bergMassCategory(:,iCell))
+
+          call cice_berg_area_update(nBergCategories, &
+                                     bergMassCategory(:,iCell), &
+                                     bergHeight(1,:,iCell), &
+                                     bergDensity, &
+                                     areaCell(iCell), &
+                                     bergAreaCategory(1,:,iCell), &
+                                     bergAreaCell(iCell))
+
+          ! check again, abort if still too full
+          ! note that once bergAreaCell has been prevented from exceeding 1 due to advection,
+          ! this should never happen
+          if (bergAreaCell(iCell) > 1.0_RKIND) then
+
+             call mpas_log_write(&
+             "MAJOR PROBLEM, THIS SHOULD NOT HAPPEN: berg area > 1 after removing calving mass: $r ", realArgs=(/bergAreaCell(iCell)/), &
+             messageType=MPAS_LOG_CRIT)
+
+          endif
+
+       else
+
+          ! reset calving mass
+          bergCalvingMass(:,iCell) = 0.0_RKIND
+
+       endif ! bergAreaCell > 1.0_RKIND
 
     enddo
 
@@ -526,10 +566,14 @@ contains
     bergAreaCell = sum(bergAreaCategory(:))
 
     ! check that berg area does not exceed cell area
+    ! note this has been changed to a LOG_ERR to test the block on calving
+    ! mass causing bergAreaCell to exceed 1, and will be reverted back to
+    ! a critical error once the block on advection causing bergAreaCell to
+    ! exceed 1 is in place.
     if (bergAreaCell > 1.0_RKIND) then
        call mpas_log_write(&
-            "berg area greater than one: $r ", realArgs=(/bergAreaCell/), &
-            messageType = MPAS_LOG_CRIT)
+            "berg area > 1: $r ", realArgs=(/bergAreaCell/), &
+            messageType=MPAS_LOG_ERR)
 
     endif
 
