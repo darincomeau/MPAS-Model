@@ -110,7 +110,7 @@ contains
     call MPAS_pool_get_config(domain % configs, "config_berg_update_open_water", config_berg_update_open_water)
 
     ! reset berg displaced area for timestep
-    if (config_berg_update_open_water) call cice_berg_update_open_water_area(domain)
+    if (config_berg_update_open_water) call cice_berg_init_displaced_area(domain)
 
   end subroutine cice_run_berg_predynamics
 
@@ -147,10 +147,11 @@ contains
 
     logical, pointer :: &
          config_use_berg_velocity_solver, & ! indicates if berg velocity solver is used
-         config_use_berg_advection
+         config_use_berg_advection, &
+         config_berg_advection_outside_velocity_subcycling
 
     integer, pointer :: &
-         config_berg_dynamics_subcycle_number ! berg dynamics subcycling number
+         config_berg_velocity_subcycle_number ! berg dynamics subcycling number
 
     integer :: &
          iBergSubcycle
@@ -158,21 +159,42 @@ contains
     ! determine if velocity solver switched on
     call MPAS_pool_get_config(domain % configs, "config_use_berg_velocity_solver", config_use_berg_velocity_solver)
     call MPAS_pool_get_config(domain % configs, "config_use_berg_advection", config_use_berg_advection)
-    call MPAS_pool_get_config(domain % configs, "config_berg_dynamics_subcycle_number", config_berg_dynamics_subcycle_number)
+    call MPAS_pool_get_config(domain % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
+    call MPAS_pool_get_config(domain % configs, "config_berg_advection_outside_velocity_subcycling", config_berg_advection_outside_velocity_subcycling)
 
-    do iBergSubcycle = 1, config_berg_dynamics_subcycle_number
+    if (config_berg_advection_outside_velocity_subcycling) then ! advection outside subcycling
 
-       ! berg velocity solver
-       call mpas_timer_start("Berg velocity solver")
-       if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
-       call mpas_timer_stop("Berg velocity solver")
+       do iBergSubcycle = 1, config_berg_velocity_subcycle_number
+
+          ! berg velocity solver
+          call mpas_timer_start("Berg velocity solver")
+          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
+          call mpas_timer_stop("Berg velocity solver")
+
+       enddo ! iBergSubcycle
 
        ! advection by incremental remapping
        call mpas_timer_start("Berg advection")
        if (config_use_berg_advection) call cice_run_berg_advection(domain, clock, ierr)
        call mpas_timer_stop("Berg advection")
 
-    enddo ! iBergSubcycle
+    else ! advection inside subcycling
+
+       do iBergSubcycle = 1, config_berg_velocity_subcycle_number
+
+          ! berg velocity solver
+          call mpas_timer_start("Berg velocity solver")
+          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
+          call mpas_timer_stop("Berg velocity solver")
+
+          ! advection by incremental remapping
+          call mpas_timer_start("Berg advection")
+          if (config_use_berg_advection) call cice_run_berg_advection(domain, clock, ierr)
+          call mpas_timer_stop("Berg advection")
+
+       enddo ! iBergSubcycle
+
+    endif ! config_berg_advection_outside_velocity_subcycling
 
   end subroutine cice_run_berg_dynamics
 
