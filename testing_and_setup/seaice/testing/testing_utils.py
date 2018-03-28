@@ -195,17 +195,17 @@ def run_model(runName, mpasDir, domainsDir, domain, configuration, nmlChanges, s
     os.chdir(runName)
 
     # sym link executable
-    os.symlink(mpasDir + "/cice_model", "cice_model")
+    os.symlink(mpasDir + "/seaice_model", "seaice_model")
 
     # get domain
     cmd = domainsDir + "/" + domain + "/get_domain.py"
     os.system(cmd)
 
     # create namelist file
-    create_new_namelist(mpasDir+"/testing_and_setup/seaice/configurations/"+configuration+"/namelist.cice", "namelist.cice", nmlChanges)
+    create_new_namelist(mpasDir+"/testing_and_setup/seaice/configurations/"+configuration+"/namelist.seaice", "namelist.seaice", nmlChanges)
 
     # create streams file
-    create_new_streams(mpasDir+"/testing_and_setup/seaice/configurations/"+configuration+"/streams.cice", "streams.cice", streamChanges)
+    create_new_streams(mpasDir+"/testing_and_setup/seaice/configurations/"+configuration+"/streams.seaice", "streams.seaice", streamChanges)
 
     # run the model
     returnCode = execute_model(nProcs, logfile)
@@ -223,14 +223,14 @@ def restart_model(runName, nmlChanges, streamChanges, nProcs, logfile):
     os.chdir(runName)
 
     # update namelist
-    os.rename("namelist.cice","namelist.cice.prev")
-    os.rename("streams.cice","streams.cice.prev")
+    os.rename("namelist.seaice","namelist.seaice.prev")
+    os.rename("streams.seaice","streams.seaice.prev")
 
     # update namelist
-    create_new_namelist("namelist.cice.prev", "namelist.cice", nmlChanges)
+    create_new_namelist("namelist.seaice.prev", "namelist.seaice", nmlChanges)
 
     # create streams file
-    create_new_streams("streams.cice.prev", "streams.cice", streamChanges)
+    create_new_streams("streams.seaice.prev", "streams.seaice", streamChanges)
 
     # run the model
     returnCode = execute_model(nProcs, logfile)
@@ -246,8 +246,8 @@ def execute_model(nProcs, logfile):
 
     import subprocess
 
-    # execute mpirun -np np cice_model
-    process = subprocess.Popen(["mpirun", "-np", "%i" %(nProcs), "cice_model"], stdout=logfile, stderr=logfile)
+    # execute mpirun -np np seaice_model
+    process = subprocess.Popen(["mpirun", "-np", "%i" %(nProcs), "seaice_model"], stdout=logfile, stderr=logfile)
     returnCode = process.wait()
     logfile.flush()
     logfile.write("Return code: %i\n" %(returnCode))
