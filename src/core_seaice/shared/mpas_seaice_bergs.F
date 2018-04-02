@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_bergs
+!  seaice_bergs
 !
 !> \brief   Iceberg model
 !> \author  Darin Comeau, LANL
@@ -10,7 +10,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_bergs
+module seaice_bergs
 
    use mpas_derived_types
    use mpas_pool_routines
@@ -28,15 +28,15 @@ module cice_bergs
    save
 
    public :: &
-      cice_bergs_init, &
-      cice_run_berg_dynamics, &
-      cice_run_berg_postdynamics
+      seaice_bergs_init, &
+      seaice_run_berg_dynamics, &
+      seaice_run_berg_postdynamics
 
 contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_bergs_init
+!  seaice_bergs_init
 !
 !> \brief   Initialize iceberg model         
 !> \author  Darin Comeau, LANL
@@ -46,16 +46,16 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_bergs_init(domain)
+  subroutine seaice_bergs_init(domain)
 
-    use cice_berg_calving, only: &
-         cice_init_berg_calving_fluxes
+    use seaice_berg_calving, only: &
+         seaice_init_berg_calving_fluxes
 
-    use cice_berg_velocity_solver, only: &
-         cice_init_berg_velocity_solver
+    use seaice_berg_velocity_solver, only: &
+         seaice_init_berg_velocity_solver
 
-    use cice_berg_advection, only: &
-         cice_init_berg_tracers
+    use seaice_berg_advection, only: &
+         seaice_init_berg_tracers
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -70,23 +70,23 @@ contains
        call mpas_timer_start("Berg initialization")
 
        ! initialize calving fluxes
-       call cice_init_berg_calving_fluxes(domain)
+       call seaice_init_berg_calving_fluxes(domain)
 
        ! initialize velocity solver
-       call cice_init_berg_velocity_solver(domain)
+       call seaice_init_berg_velocity_solver(domain)
 
        ! initialize tracers
-       call cice_init_berg_tracers(domain)
+       call seaice_init_berg_tracers(domain)
 
        call mpas_timer_stop("Berg initialization")
 
     endif
 
-  end subroutine cice_bergs_init
+  end subroutine seaice_bergs_init
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_predynamics
+!  seaice_run_berg_predynamics
 !
 !> \brief   Wrapper for pre-dynamics routines
 !> \author  Darin Comeau, LANL
@@ -96,10 +96,10 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_predynamics(domain)
+  subroutine seaice_run_berg_predynamics(domain)
 
-    use cice_berg_state, only: &
-         cice_berg_init_displaced_area
+    use seaice_berg_state, only: &
+         seaice_berg_init_displaced_area
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -110,15 +110,15 @@ contains
     call MPAS_pool_get_config(domain % configs, "config_berg_update_open_water", config_berg_update_open_water)
 
     ! reset berg displaced area for timestep
-    if (config_berg_update_open_water) call cice_berg_init_displaced_area(domain)
+    if (config_berg_update_open_water) call seaice_berg_init_displaced_area(domain)
 
-  end subroutine cice_run_berg_predynamics
+  end subroutine seaice_run_berg_predynamics
 
 ! !-----------------------------------------------------------------------
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_dynamics
+!  seaice_run_berg_dynamics
 !
 !> \brief   Wrapper for iceberg dynamics
 !> \author  Darin Comeau, LANL
@@ -128,13 +128,13 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_dynamics(domain, clock, ierr)
+  subroutine seaice_run_berg_dynamics(domain, clock, ierr)
 
-    use cice_berg_velocity_solver, only: &
-         cice_run_berg_velocity_solver
+    use seaice_berg_velocity_solver, only: &
+         seaice_run_berg_velocity_solver
 
-    use cice_berg_advection, only: &
-         cice_run_berg_advection
+    use seaice_berg_advection, only: &
+         seaice_run_berg_advection
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -168,14 +168,14 @@ contains
 
           ! berg velocity solver
           call mpas_timer_start("Berg velocity solver")
-          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
+          if (config_use_berg_velocity_solver) call seaice_run_berg_velocity_solver(domain, clock)
           call mpas_timer_stop("Berg velocity solver")
 
        enddo ! iBergSubcycle
 
        ! advection by incremental remapping
        call mpas_timer_start("Berg advection")
-       if (config_use_berg_advection) call cice_run_berg_advection(domain, clock, ierr)
+       if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock, ierr)
        call mpas_timer_stop("Berg advection")
 
     else ! advection inside subcycling
@@ -184,23 +184,23 @@ contains
 
           ! berg velocity solver
           call mpas_timer_start("Berg velocity solver")
-          if (config_use_berg_velocity_solver) call cice_run_berg_velocity_solver(domain, clock)
+          if (config_use_berg_velocity_solver) call seaice_run_berg_velocity_solver(domain, clock)
           call mpas_timer_stop("Berg velocity solver")
 
           ! advection by incremental remapping
           call mpas_timer_start("Berg advection")
-          if (config_use_berg_advection) call cice_run_berg_advection(domain, clock, ierr)
+          if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock, ierr)
           call mpas_timer_stop("Berg advection")
 
        enddo ! iBergSubcycle
 
     endif ! config_berg_advection_outside_velocity_subcycling
 
-  end subroutine cice_run_berg_dynamics
+  end subroutine seaice_run_berg_dynamics
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_postdynamics
+!  seaice_run_berg_postdynamics
 !
 !> \brief   Wrapper for post-dynamics routines
 !> \author  Darin Comeau, LANL
@@ -210,19 +210,19 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_postdynamics(domain, clock, itimestep)
+  subroutine seaice_run_berg_postdynamics(domain, clock, itimestep)
 
-    use cice_berg_decay, only: &
-         cice_run_berg_decay
+    use seaice_berg_decay, only: &
+         seaice_run_berg_decay
 
-    use cice_berg_state, only: &
-         cice_berg_update_mass_and_area, &
-         cice_berg_accumulate_calving_mass, &
-         cice_berg_release_calving_mass, &
-         cice_berg_update_open_water_area
+    use seaice_berg_state, only: &
+         seaice_berg_update_mass_and_area, &
+         seaice_berg_accumulate_calving_mass, &
+         seaice_berg_release_calving_mass, &
+         seaice_berg_update_open_water_area
 
-    use cice_berg_velocity_solver, only: &
-         cice_berg_forcing_for_ice
+    use seaice_berg_velocity_solver, only: &
+         seaice_berg_forcing_for_ice
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -244,30 +244,30 @@ contains
 
     ! berg mass and area state variables update
     call mpas_timer_start("Berg update mass")
-    call cice_berg_update_mass_and_area(domain)
+    call seaice_berg_update_mass_and_area(domain)
     call mpas_timer_stop("Berg update mass")
 
     ! berg decay solver
     call mpas_timer_start("Berg decay")
-    if (config_use_berg_decay) call cice_run_berg_decay(domain, clock)
+    if (config_use_berg_decay) call seaice_run_berg_decay(domain, clock)
     call mpas_timer_stop("Berg decay")
 
     ! berg calving
     call mpas_timer_start("Berg calving")
-    call cice_berg_accumulate_calving_mass(domain)
-    call cice_berg_release_calving_mass(domain, itimestep)
+    call seaice_berg_accumulate_calving_mass(domain)
+    call seaice_berg_release_calving_mass(domain, itimestep)
     call mpas_timer_stop("Berg calving")
 
     ! berg sea ice interaction
     call mpas_timer_start("Berg sea ice interaction")
-    if (config_berg_seaice_interaction) call cice_berg_forcing_for_ice(domain)
+    if (config_berg_seaice_interaction) call seaice_berg_forcing_for_ice(domain)
     call mpas_timer_stop("Berg sea ice interaction")
 
     ! update open water
-    if (config_berg_update_open_water) call cice_berg_update_open_water_area(domain)
+    if (config_berg_update_open_water) call seaice_berg_update_open_water_area(domain)
 
-  end subroutine cice_run_berg_postdynamics
+  end subroutine seaice_run_berg_postdynamics
 
 !-----------------------------------------------------------------------
 
-end module cice_bergs
+end module seaice_bergs

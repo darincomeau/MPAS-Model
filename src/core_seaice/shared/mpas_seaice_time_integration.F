@@ -58,9 +58,9 @@ contains
     use seaice_velocity_solver, only: &
          seaice_run_velocity_solver
 
-    use cice_bergs, only: &
-         cice_run_berg_dynamics, &
-         cice_run_berg_postdynamics
+    use seaice_bergs, only: &
+         seaice_run_berg_dynamics, &
+         seaice_run_berg_postdynamics
 
     use seaice_advection, only: &
          seaice_run_advection
@@ -170,7 +170,7 @@ contains
        ! berg dynamics
        if (config_use_bergs) then
           call mpas_timer_start("Berg dynamics")
-          call cice_run_berg_dynamics(domain, clock, ierr)
+          call seaice_run_berg_dynamics(domain, clock, ierr)
           call mpas_timer_stop("Berg dynamics")
        endif
 
@@ -179,7 +179,7 @@ contains
     ! berg decay and calving check
     if (config_use_bergs) then
        call mpas_timer_start("Berg post-dynamics")
-       call cice_run_berg_postdynamics(domain, clock, itimestep)
+       call seaice_run_berg_postdynamics(domain, clock, itimestep)
        call mpas_timer_stop("Berg post-dynamics")
     endif
 

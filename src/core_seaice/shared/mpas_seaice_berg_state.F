@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_state
+!  seaice_berg_state
 !
 !> \brief   Update iceberg model
 !> \author  Darin Comeau, LANL
@@ -9,7 +9,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_berg_state
+module seaice_berg_state
 
    use mpas_derived_types
    use mpas_pool_routines
@@ -27,13 +27,13 @@ module cice_berg_state
    save
 
    public :: &
-      cice_berg_accumulate_calving_mass, &
-      cice_berg_release_calving_mass, &
-      cice_berg_dimensions_update, &
-      cice_berg_area_update, &
-      cice_berg_update_mass_and_area, &
-      cice_berg_update_open_water_area, &
-      cice_berg_init_displaced_area
+      seaice_berg_accumulate_calving_mass, &
+      seaice_berg_release_calving_mass, &
+      seaice_berg_dimensions_update, &
+      seaice_berg_area_update, &
+      seaice_berg_update_mass_and_area, &
+      seaice_berg_update_open_water_area, &
+      seaice_berg_init_displaced_area
 
 contains
 
@@ -43,7 +43,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_accumulate_calving_mass
+!  seaice_berg_accumulate_calving_mass
 !
 !> \brief   Accumulate calving mass
 !> \author  Darin Comeau, LANL
@@ -54,7 +54,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_accumulate_calving_mass(domain)
+  subroutine seaice_berg_accumulate_calving_mass(domain)
 
     type(domain_type), intent(inout) :: &
          domain
@@ -129,11 +129,11 @@ contains
        block => block % next
     enddo
 
-  end subroutine cice_berg_accumulate_calving_mass
+  end subroutine seaice_berg_accumulate_calving_mass
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_release_calving_mass
+!  seaice_berg_release_calving_mass
 !
 !> \brief   Release calving fluxes
 !> \author  Darin Comeau, LANL
@@ -143,7 +143,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_release_calving_mass(domain, itimestep)
+  subroutine seaice_berg_release_calving_mass(domain, itimestep)
 
     use seaice_constants, only: &
          seaiceSecondsPerYear
@@ -217,7 +217,7 @@ contains
 
     endif
 
-  end subroutine cice_berg_release_calving_mass
+  end subroutine seaice_berg_release_calving_mass
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -306,14 +306,14 @@ contains
           if (bergCalvingMask(iCategory,iCell) == 1) then
 
              ! average dimensions with existing bergs
-             call cice_berg_dimensions_update(bergMassCategory(iCategory,iCell), &
-                                              bergCalvingMass(iCategory,iCell), &
-                                              bergLength(1,iCategory,iCell), &
-                                              bergCalvingLength(iCategory), &
-                                              bergHeight(1,iCategory,iCell), &
-                                              bergCalvingHeight(iCategory), &
-                                              bergLength(1,iCategory,iCell), &
-                                              bergHeight(1,iCategory,iCell))
+             call seaice_berg_dimensions_update(bergMassCategory(iCategory,iCell), &
+                                                bergCalvingMass(iCategory,iCell), &
+                                                bergLength(1,iCategory,iCell), &
+                                                bergCalvingLength(iCategory), &
+                                                bergHeight(1,iCategory,iCell), &
+                                                bergCalvingHeight(iCategory), &
+                                                bergLength(1,iCategory,iCell), &
+                                                bergHeight(1,iCategory,iCell))
 
              ! add calving mass
              bergMassCategory(iCategory,iCell) = bergMassCategory(iCategory,iCell) &
@@ -329,13 +329,13 @@ contains
        ! update iceberg area if any new bergs calved
        if (maxval(bergCalvingMask(:,iCell)) > 0) then
 
-          call cice_berg_area_update(nBergCategories, &
-                                     bergMassCategory(:,iCell), &
-                                     bergHeight(1,:,iCell), &
-                                     bergDensity, &
-                                     areaCell(iCell), &
-                                     bergAreaCategory(1,:,iCell), &
-                                     bergAreaCell(iCell))
+          call seaice_berg_area_update(nBergCategories, &
+                                       bergMassCategory(:,iCell), &
+                                       bergHeight(1,:,iCell), &
+                                       bergDensity, &
+                                       areaCell(iCell), &
+                                       bergAreaCategory(1,:,iCell), &
+                                       bergAreaCell(iCell))
 
        endif ! bergCalvingMask
 
@@ -356,13 +356,13 @@ contains
           ! recalculate aggregate berg mass & area
           bergMassCell(iCell) = sum(bergMassCategory(:,iCell))
 
-          call cice_berg_area_update(nBergCategories, &
-                                     bergMassCategory(:,iCell), &
-                                     bergHeight(1,:,iCell), &
-                                     bergDensity, &
-                                     areaCell(iCell), &
-                                     bergAreaCategory(1,:,iCell), &
-                                     bergAreaCell(iCell))
+          call seaice_berg_area_update(nBergCategories, &
+                                       bergMassCategory(:,iCell), &
+                                       bergHeight(1,:,iCell), &
+                                       bergDensity, &
+                                       areaCell(iCell), &
+                                       bergAreaCategory(1,:,iCell), &
+                                       bergAreaCell(iCell))
 
           ! check again, abort if still too full
           ! note that once bergAreaCell has been prevented from exceeding 1 due to advection,
@@ -460,7 +460,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_dimensions_update
+!  seaice_berg_dimensions_update
 !
 !> \brief   Update iceberg dimensions
 !> \author  Darin Comeau, LANL
@@ -470,7 +470,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_dimensions_update(&
+  subroutine seaice_berg_dimensions_update(&
        bergMass1, &
        bergMass2, &
        bergLength1, &
@@ -501,11 +501,11 @@ contains
     newBergLength = weight*bergLength1 + (1.0_RKIND-weight)*bergLength2
     newBergHeight = weight*bergHeight1 + (1.0_RKIND-weight)*bergHeight2
 
-  end subroutine cice_berg_dimensions_update
+  end subroutine seaice_berg_dimensions_update
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_area_update
+!  seaice_berg_area_update
 !
 !> \brief   Update iceberg area
 !> \author  Darin Comeau, LANL
@@ -515,7 +515,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_area_update(&
+  subroutine seaice_berg_area_update(&
        nBergCategories, &
        bergMassCategory, &
        bergHeight, &
@@ -577,11 +577,11 @@ contains
 
     endif
 
-  end subroutine cice_berg_area_update
+  end subroutine seaice_berg_area_update
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_update_mass_and_area
+!  seaice_berg_update_mass_and_area
 !
 !> \brief   Update berg masses
 !> \author  Darin Comeau, LANL
@@ -591,7 +591,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_update_mass_and_area(domain)
+  subroutine seaice_berg_update_mass_and_area(domain)
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -672,11 +672,11 @@ contains
        block => block % next
     enddo
 
-  end subroutine cice_berg_update_mass_and_area
+  end subroutine seaice_berg_update_mass_and_area
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_update_open_water_area
+!  seaice_berg_update_open_water_area
 !
 !> \brief   Update berg masses
 !> \author  Darin Comeau, LANL
@@ -685,7 +685,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_update_open_water_area(domain)
+  subroutine seaice_berg_update_open_water_area(domain)
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -751,11 +751,11 @@ contains
     block => block % next
     enddo
 
-  end subroutine cice_berg_update_open_water_area
+  end subroutine seaice_berg_update_open_water_area
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_init_displaced_area
+!  seaice_berg_init_displaced_area
 !
 !> \brief   Update berg masses
 !> \author  Darin Comeau, LANL
@@ -765,7 +765,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_init_displaced_area(domain)
+  subroutine seaice_berg_init_displaced_area(domain)
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -793,8 +793,8 @@ contains
     block => block % next
     enddo
 
-  end subroutine cice_berg_init_displaced_area
+  end subroutine seaice_berg_init_displaced_area
 
 !-----------------------------------------------------------------------
 
-end module cice_berg_state
+end module seaice_berg_state
