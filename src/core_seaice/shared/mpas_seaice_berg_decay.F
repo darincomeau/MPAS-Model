@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_decay
+!  seaice_berg_decay
 !
 !> \brief   Calculate iceberg velocities
 !> \author  Darin Comeau, LANL
@@ -11,7 +11,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_berg_decay
+module seaice_berg_decay
 
   use mpas_derived_types
   use mpas_pool_routines
@@ -26,7 +26,7 @@ module cice_berg_decay
   save
 
   public :: &
-       cice_run_berg_decay
+       seaice_run_berg_decay
 
   ! berg decay mask thresholds
   real(kind=RKIND), parameter, private :: &
@@ -42,7 +42,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_decay
+!  seaice_run_berg_decay
 !
 !> \brief   Calculate iceberg decay
 !> \author  Darin Comeau, LANL
@@ -51,7 +51,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_decay(domain, clock)!{{{
+  subroutine seaice_run_berg_decay(domain, clock)!{{{
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -98,7 +98,7 @@ contains
        block => block % next
     enddo
 
-  end subroutine cice_run_berg_decay!}}}
+  end subroutine seaice_run_berg_decay!}}}
 
 !-----------------------------------------------------------------------
 ! Initialization
@@ -1034,7 +1034,7 @@ contains
 
   subroutine berg_update_area_after_decay(block)!{{{
 
-    use cice_berg_state, only: cice_berg_area_update
+    use seaice_berg_state, only: seaice_berg_area_update
 
     type(block_type), intent(inout) :: &
          block
@@ -1105,13 +1105,13 @@ contains
 
        ! update iceberg area if any category changed due to decay
        if (updateBergArea) then
-          call cice_berg_area_update(nBergCategories, &
-                                     bergMassCategory(:,iCell), &
-                                     bergHeight(1,:,iCell), &
-                                     bergDensity, &
-                                     areaCell(iCell), &
-                                     bergAreaCategory(1,:,iCell), &
-                                     bergAreaCell(iCell))
+          call seaice_berg_area_update(nBergCategories, &
+                                       bergMassCategory(:,iCell), &
+                                       bergHeight(1,:,iCell), &
+                                       bergDensity, &
+                                       areaCell(iCell), &
+                                       bergAreaCategory(1,:,iCell), &
+                                       bergAreaCell(iCell))
 
        endif
 
@@ -1121,4 +1121,4 @@ contains
 
 !-----------------------------------------------------------------------
 
-end module cice_berg_decay
+end module seaice_berg_decay

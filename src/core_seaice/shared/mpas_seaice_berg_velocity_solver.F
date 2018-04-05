@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_velocity_solver
+!  seaice_berg_velocity_solver
 !
 !> \brief   Calculate iceberg velocities
 !> \author  Darin Comeau, LANL
@@ -14,7 +14,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_berg_velocity_solver
+module seaice_berg_velocity_solver
 
   use mpas_derived_types
   use mpas_pool_routines
@@ -29,9 +29,9 @@ module cice_berg_velocity_solver
   save
 
   public :: &
-       cice_init_berg_velocity_solver, &
-       cice_run_berg_velocity_solver, &
-       cice_berg_forcing_for_ice
+       seaice_init_berg_velocity_solver, &
+       seaice_run_berg_velocity_solver, &
+       seaice_berg_forcing_for_ice
 
   ! berg velocity solver constants
   real(kind=RKIND), parameter, private :: &
@@ -45,7 +45,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_init_berg_velocity_solver
+!  seaice_init_berg_velocity_solver
 !
 !> \brief   Initialize berg velocity solver
 !> \author  Darin Comeau, LANL
@@ -55,7 +55,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_init_berg_velocity_solver(domain)
+  subroutine seaice_init_berg_velocity_solver(domain)
 
     type(domain_type), intent(inout) :: &
          domain
@@ -91,13 +91,13 @@ contains
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityTimeStep", bergVelocityTimeStep)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergAdvectionTimeStep", bergAdvectionTimeStep)
 
-       ! berg velocity solver is inside sea ice dynamics loop in cice_time_integration
+       ! berg velocity solver is inside sea ice dynamics loop in seaice_time_integration
        bergVelocityTimeStep = config_dt / (real(config_berg_velocity_subcycle_number,RKIND) * &
                                            real(config_dynamics_subcycle_number,RKIND))
 
        if (config_berg_advection_outside_velocity_subcycling) then
 
-          ! berg advection is inside sea ice dynamics loop in cice_time_integration
+          ! berg advection is inside sea ice dynamics loop in seaice_time_integration
           bergAdvectionTimeStep = config_dt / (real(config_dynamics_subcycle_number,RKIND))
 
        else ! advection inside subcycling, advection timestep same as velocity solver timestep
@@ -111,7 +111,7 @@ contains
        block => block % next
     enddo
 
-  end subroutine cice_init_berg_velocity_solver
+  end subroutine seaice_init_berg_velocity_solver
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -239,7 +239,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_velocity_solver
+!  seaice_run_berg_velocity_solver
 !
 !> \brief   Calculate iceberg velocities by solving momentum equation
 !> \author  Darin Comeau, LANL
@@ -248,7 +248,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_velocity_solver(domain, clock)
+  subroutine seaice_run_berg_velocity_solver(domain, clock)
 
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
@@ -301,7 +301,7 @@ contains
     call MPAS_dmpar_field_halo_exch(domain, 'vBergVelocity')
     call mpas_timer_stop("Berg velocity solver halo")
 
-  end subroutine cice_run_berg_velocity_solver
+  end subroutine seaice_run_berg_velocity_solver
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -1728,7 +1728,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_forcing_for_ice
+!  seaice_berg_forcing_for_ice
 !
 !> \brief   Calculate berg forcing for sea ice
 !> \author  Darin Comeau, LANL
@@ -1739,7 +1739,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_berg_forcing_for_ice(domain)
+  subroutine seaice_berg_forcing_for_ice(domain)
 
     use seaice_mesh, only: &
          seaice_interpolate_cell_to_vertex, &
@@ -1945,7 +1945,7 @@ contains
     call MPAS_dmpar_field_halo_exch(domain, 'bergDisplacedArea')
     call mpas_timer_stop("Berg velocity solver halo")  
 
-  end subroutine cice_berg_forcing_for_ice
+  end subroutine seaice_berg_forcing_for_ice
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -2038,4 +2038,4 @@ contains
 
 !-----------------------------------------------------------------------
 
-end module cice_berg_velocity_solver
+end module seaice_berg_velocity_solver

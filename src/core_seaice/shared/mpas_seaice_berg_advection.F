@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_advection
+!  seaice_berg_advection
 !
 !> \brief   Iceberg model advection
 !> \author  Darin Comeau, LANL
@@ -9,7 +9,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_berg_advection
+module seaice_berg_advection
 
    use mpas_derived_types
    use mpas_pool_routines
@@ -27,8 +27,8 @@ module cice_berg_advection
    save
 
    public :: &
-      cice_init_berg_tracers, &
-      cice_run_berg_advection
+      seaice_init_berg_tracers, &
+      seaice_run_berg_advection
 
 contains
 
@@ -38,7 +38,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_init_berg_tracers
+!  seaice_init_berg_tracers
 !
 !> \brief   Initialize iceberg tracers
 !> \author  Darin Comeau, LANL
@@ -47,10 +47,10 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_init_berg_tracers(domain)
+  subroutine seaice_init_berg_tracers(domain)
 
     use seaice_advection_incremental_remap_tracers, only: &
-         cice_add_berg_tracers_to_linked_list, &
+         seaice_add_berg_tracers_to_linked_list, &
          bergTracersHeadArray
 
     type(domain_type), intent(inout) :: &
@@ -67,13 +67,13 @@ contains
 
     do iCategory = 1, nBergCategories
 
-       call cice_add_berg_tracers_to_linked_list(domain, &
-                                                 bergTracersHeadArray(iCategory) % tracerTypePtr, &
-                                                 iCategory)
+       call seaice_add_berg_tracers_to_linked_list(domain, &
+                                                   bergTracersHeadArray(iCategory) % tracerTypePtr, &
+                                                   iCategory)
 
     enddo
 
-  end subroutine cice_init_berg_tracers
+  end subroutine seaice_init_berg_tracers
 
 !-----------------------------------------------------------------------
 ! Iceberg advection
@@ -81,7 +81,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_run_berg_advection
+!  seaice_run_berg_advection
 !
 !> \brief   Advect icebergs
 !> \author  Darin Comeau, LANL
@@ -91,7 +91,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_run_berg_advection(domain, clock, ierr)
+  subroutine seaice_run_berg_advection(domain, clock, ierr)
 
     use seaice_advection_incremental_remap, only: &
          seaice_run_advection_incremental_remap
@@ -118,16 +118,16 @@ contains
     do iCategory = 1, nBergCategories
 
        call seaice_run_advection_incremental_remap(domain, &
-                                                 bergTracersHeadArray(iCategory) % tracerTypePtr, &
-                                                 clock, &
-                                                 ierr, &
-                                                 updateHaloInitIn = .true., &
-                                                 updateHaloFinalIn = .true.)
+                                                   bergTracersHeadArray(iCategory) % tracerTypePtr, &
+                                                   clock, &
+                                                   ierr, &
+                                                   updateHaloInitIn = .true., &
+                                                   updateHaloFinalIn = .true.)
 
     enddo
 
-  end subroutine cice_run_berg_advection
+  end subroutine seaice_run_berg_advection
 
 !-----------------------------------------------------------------------
 
-end module cice_berg_advection
+end module seaice_berg_advection

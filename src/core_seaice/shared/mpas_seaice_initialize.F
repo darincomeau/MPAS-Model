@@ -56,7 +56,7 @@ contains
          seaice_init_column_physics_package_parameters, &
          seaice_init_column_physics_package_variables
     use seaice_forcing, only: seaice_forcing_init, seaice_reset_coupler_fluxes
-    use cice_bergs, only: cice_bergs_init    
+    use seaice_bergs, only: seaice_bergs_init
     use seaice_diagnostics, only: &
          seaice_set_testing_system_test_arrays
 
@@ -125,7 +125,7 @@ contains
 
     ! initialize icebergs
     call mpas_log_write(" Initialize icebergs...")
-    call cice_bergs_init(domain)    
+    call seaice_bergs_init(domain)
 
   end subroutine seaice_init!}}}
 

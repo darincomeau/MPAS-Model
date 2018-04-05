@@ -24,12 +24,12 @@ OBJS = 	mpas_seaice_time_integration.o \
 	mpas_seaice_column.o \
 	mpas_seaice_diagnostics.o \
 	mpas_seaice_error.o \
-	mpas_cice_bergs.o \
-	mpas_cice_berg_calving.o \
-	mpas_cice_berg_velocity_solver.o \
-	mpas_cice_berg_state.o \
-	mpas_cice_berg_decay.o \
-	mpas_cice_berg_advection.o
+	mpas_seaice_bergs.o \
+	mpas_seaice_berg_calving.o \
+	mpas_seaice_berg_velocity_solver.o \
+	mpas_seaice_berg_state.o \
+	mpas_seaice_berg_decay.o \
+	mpas_seaice_berg_advection.o
 
 
 all: $(OBJS)
@@ -76,25 +76,25 @@ mpas_seaice_advection.o: mpas_seaice_advection_upwind.o mpas_seaice_advection_in
 
 mpas_seaice_unit_test.o: mpas_seaice_constants.o mpas_seaice_velocity_solver_unit_tests.o
 
-mpas_seaice_time_integration.o: mpas_seaice_constants.o mpas_seaice_velocity_solver.o mpas_seaice_forcing.o mpas_seaice_unit_test.o mpas_seaice_advection.o mpas_seaice_diagnostics.o mpas_seaice_column.o mpas_cice_bergs.o
+mpas_seaice_time_integration.o: mpas_seaice_constants.o mpas_seaice_velocity_solver.o mpas_seaice_forcing.o mpas_seaice_unit_test.o mpas_seaice_advection.o mpas_seaice_diagnostics.o mpas_seaice_column.o mpas_seaice_bergs.o
 
-mpas_seaice_initialize.o: mpas_seaice_constants.o mpas_seaice_mesh.o mpas_seaice_velocity_solver.o mpas_seaice_testing.o mpas_seaice_forcing.o mpas_seaice_advection.o mpas_seaice_column.o mpas_seaice_forcing.o mpas_cice_bergs.o
+mpas_seaice_initialize.o: mpas_seaice_constants.o mpas_seaice_mesh.o mpas_seaice_velocity_solver.o mpas_seaice_testing.o mpas_seaice_forcing.o mpas_seaice_advection.o mpas_seaice_column.o mpas_seaice_forcing.o mpas_seaice_bergs.o
 
 mpas_seaice_core.o: mpas_seaice_constants.o mpas_seaice_time_integration.o mpas_seaice_velocity_solver.o mpas_seaice_forcing.o mpas_seaice_initialize.o mpas_seaice_column.o
 
 mpas_seaice_core_interface.o: mpas_seaice_core.o
 
-mpas_cice_bergs.o: mpas_cice_berg_calving.o mpas_cice_berg_velocity_solver.o mpas_cice_berg_state.o mpas_cice_berg_decay.o mpas_cice_berg_advection.o
+mpas_seaice_bergs.o: mpas_seaice_berg_calving.o mpas_seaice_berg_velocity_solver.o mpas_seaice_berg_state.o mpas_seaice_berg_decay.o mpas_seaice_berg_advection.o
 
-mpas_cice_berg_calving.o: mpas_seaice_constants.o mpas_cice_berg_state.o
+mpas_seaice_berg_calving.o: mpas_seaice_constants.o mpas_seaice_berg_state.o
 
-mpas_cice_berg_velocity_solver.o: mpas_seaice_mesh.o mpas_seaice_constants.o
+mpas_seaice_berg_velocity_solver.o: mpas_seaice_mesh.o mpas_seaice_constants.o
 
-mpas_cice_berg_state.o: mpas_seaice_constants.o
+mpas_seaice_berg_state.o: mpas_seaice_constants.o
 
-mpas_cice_berg_decay.o: mpas_seaice_mesh.o mpas_seaice_constants.o mpas_cice_berg_state.o
+mpas_seaice_berg_decay.o: mpas_seaice_mesh.o mpas_seaice_constants.o mpas_seaice_berg_state.o
 
-mpas_cice_berg_advection.o:	
+mpas_seaice_berg_advection.o:
 
 clean:
 	$(RM) *.o *.i *.mod *.f90

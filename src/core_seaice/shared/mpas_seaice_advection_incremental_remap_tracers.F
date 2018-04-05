@@ -29,7 +29,7 @@ module seaice_advection_incremental_remap_tracers
    save
 
    public :: seaice_add_ice_tracers_to_linked_list, &
-             cice_add_berg_tracers_to_linked_list, &
+             seaice_add_berg_tracers_to_linked_list, &
              seaice_set_tracer_array_pointers, &
              seaice_update_tracer_halo, &
              seaice_init_update_tracer_halo_exch_group
@@ -537,7 +537,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  routine cice_add_berg_tracers_to_linked_list
+!  routine seaice_add_berg_tracers_to_linked_list
 !
 !> \brief  construct a linked list of tracers
 !> \author Adrian Turner and William Lipscomb
@@ -547,7 +547,7 @@ contains
 !>  at the head of the list.
 !-----------------------------------------------------------------------
 
-  subroutine cice_add_berg_tracers_to_linked_list(domain, &
+  subroutine seaice_add_berg_tracers_to_linked_list(domain, &
                                                     tracersHead, &
                                                     iCategory)
 
@@ -628,7 +628,7 @@ contains
        if (associated(tracersHead)) call mpas_log_write('bergTracersHead:'//trim(tracersHead % tracerName))
     endif
 
-  end subroutine cice_add_berg_tracers_to_linked_list
+  end subroutine seaice_add_berg_tracers_to_linked_list
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !

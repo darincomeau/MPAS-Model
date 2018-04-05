@@ -1,6 +1,6 @@
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_berg_calving
+!  seaice_berg_calving
 !
 !> \brief   Set up calving fluxes for the iceberg model
 !> \author  Darin Comeau, LANL
@@ -10,7 +10,7 @@
 !
 !-----------------------------------------------------------------------
 
-module cice_berg_calving
+module seaice_berg_calving
 
    use mpas_derived_types
    use mpas_pool_routines
@@ -28,7 +28,7 @@ module cice_berg_calving
    save
 
    public :: &
-      cice_init_berg_calving_fluxes
+      seaice_init_berg_calving_fluxes
 
 contains
 
@@ -38,7 +38,7 @@ contains
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
-!  cice_init_berg_calving_fluxes
+!  seaice_init_berg_calving_fluxes
 !
 !> \brief   Initialize iceberg calving fluxes
 !> \author  Darin Comeau, LANL
@@ -49,7 +49,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine cice_init_berg_calving_fluxes(domain)
+  subroutine seaice_init_berg_calving_fluxes(domain)
 
     type(domain_type), intent(inout) :: &
          domain
@@ -102,7 +102,7 @@ contains
        block => block % next
     enddo
 
-   end subroutine cice_init_berg_calving_fluxes
+   end subroutine seaice_init_berg_calving_fluxes
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -440,4 +440,4 @@ contains
 
 !-----------------------------------------------------------------------
 
-end module cice_berg_calving
+end module seaice_berg_calving
