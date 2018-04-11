@@ -29,6 +29,7 @@ module seaice_bergs
 
    public :: &
       seaice_bergs_init, &
+      seaice_run_berg_predynamics, &
       seaice_run_berg_dynamics, &
       seaice_run_berg_postdynamics
 
