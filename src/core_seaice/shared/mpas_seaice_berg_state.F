@@ -566,14 +566,10 @@ contains
     bergAreaCell = sum(bergAreaCategory(:))
 
     ! check that berg area does not exceed cell area
-    ! note this has been changed to a LOG_ERR to test the block on calving
-    ! mass causing bergAreaCell to exceed 1, and will be reverted back to
-    ! a critical error once the block on advection causing bergAreaCell to
-    ! exceed 1 is in place.
     if (bergAreaCell > 1.0_RKIND) then
        call mpas_log_write(&
             "berg area > 1: $r ", realArgs=(/bergAreaCell/), &
-            messageType=MPAS_LOG_ERR)
+            messageType=MPAS_LOG_CRIT)
 
     endif
 

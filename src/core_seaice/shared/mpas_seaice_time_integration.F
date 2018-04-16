@@ -59,6 +59,7 @@ contains
          seaice_run_velocity_solver
 
     use seaice_bergs, only: &
+         seaice_run_berg_predynamics, &
          seaice_run_berg_dynamics, &
          seaice_run_berg_postdynamics
 
@@ -132,6 +133,13 @@ contains
     if (config_perform_unit_test) then
        call seaice_perform_unit_test(domain)
        return
+    endif
+
+    ! iceberg pre dynamics
+    if (config_use_bergs) then
+       call mpas_timer_start("Berg pre-dynamics")
+       call seaice_run_berg_predynamics(domain)
+       call mpas_timer_stop("Berg pre-dynamics")
     endif
 
     ! pre dynamics column physics
