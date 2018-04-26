@@ -1685,6 +1685,7 @@
 		<nml_option name="config_berg_advection_outside_velocity_subcycling"			type="logical"		default_value="true"/>
 		<nml_option name="config_berg_update_open_water"       type="logical"    default_value="false"/>
 		<nml_option name="config_berg_seaice_interaction"       type="logical"    default_value="false"/>
+		<nml_option name="config_berg_ridge_seaice"       type="logical"    default_value="false"/>
 	</nml_record>
 
 	<streams>

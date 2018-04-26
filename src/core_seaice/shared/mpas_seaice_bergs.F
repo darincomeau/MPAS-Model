@@ -211,7 +211,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine seaice_run_berg_postdynamics(domain, clock, itimestep)
+  subroutine seaice_run_berg_postdynamics(domain, clock, itimestep, ierr)
 
     use seaice_berg_decay, only: &
          seaice_run_berg_decay
@@ -225,6 +225,9 @@ contains
     use seaice_berg_velocity_solver, only: &
          seaice_berg_forcing_for_ice
 
+    use seaice_column, only: &
+         seaice_column_ridging_by_bergs
+
     type(domain_type), intent(inout) :: &
          domain !< Input/Output:
 
@@ -234,14 +237,19 @@ contains
     integer, intent(in) :: &
          itimestep !< Input:
 
+    integer, intent(inout) :: &
+         ierr  !< Input/Output:
+
     logical, pointer :: &
          config_use_berg_decay, &         ! flag to turn on / off berg decay parameterization
          config_berg_update_open_water, & ! flag to turn on / off bergs affecting open water
-         config_berg_seaice_interaction   ! flag to turn on / off bergs affecting open water
+         config_berg_seaice_interaction, &! flag to turn on / off bergs term in sea ice momentum equation
+         config_berg_ridge_seaice         ! flag to turn on / off bergs causing sea ice to ridge
 
     call MPAS_pool_get_config(domain % configs, "config_use_berg_decay", config_use_berg_decay)
     call MPAS_pool_get_config(domain % configs, "config_berg_update_open_water", config_berg_update_open_water)
     call MPAS_pool_get_config(domain % configs, "config_berg_seaice_interaction", config_berg_seaice_interaction)
+    call MPAS_pool_get_config(domain % configs, "config_berg_ridge_seaice", config_berg_ridge_seaice)
 
     ! berg mass and area state variables update
     call mpas_timer_start("Berg update mass")
@@ -265,7 +273,14 @@ contains
     call mpas_timer_stop("Berg sea ice interaction")
 
     ! update open water
+    call mpas_timer_start("Berg update open water")
     if (config_berg_update_open_water) call seaice_berg_update_open_water_area(domain)
+    call mpas_timer_stop("Berg update open water")
+
+    ! berg sea ice interaction
+    call mpas_timer_start("Berg induced ridging")
+    if (config_berg_ridge_seaice) call seaice_column_ridging_by_bergs(domain, ierr)
+    call mpas_timer_stop("Berg induced ridging")
 
   end subroutine seaice_run_berg_postdynamics
 

@@ -46,7 +46,7 @@
       save
 
       private
-      public :: ridge_ice, asum_ridging, ridge_itd
+      public :: ridge_ice, asum_ridging, ridge_itd, ridge_shift, ridge_prep
 
       real (kind=dbl_kind), parameter :: & 
          Cs = p25         , & ! fraction of shear energy contrbtng to ridging 
