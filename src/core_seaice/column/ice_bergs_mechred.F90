@@ -15,7 +15,7 @@
                          column_conservation_check
       use ice_mechred, only: asum_ridging, ridge_itd, ridge_shift, ridge_prep
       use ice_colpkg_tracers, only: nt_qice, nt_qsno, nt_fbri, nt_sice
-      use ice_warnings, only: add_warning                                    
+      use ice_warnings, only: add_warning
 
       implicit none
       save
@@ -33,7 +33,7 @@
 
 !=======================================================================
 
-! Compute changes in the sea ice thickness distribution due to ice bergs.
+! Compute changes in the sea ice thickness distribution due to icebergs.
 ! Based on ice_mechred.F90
 !
 ! NOTE: This subroutine operates over a single block.
@@ -53,7 +53,7 @@
                                      trcr_depend,  trcr_base ,  &
                                      n_trcr_strata,             &
                                      nt_strata,    l_stop,      &
-                                     stop_label,                &                                  
+                                     stop_label,                &
                                      krdg_partic,  krdg_redist, &
                                      mu_rdg,       tr_brine,    &
                                      dardg1dt,     dardg2dt,    &
@@ -67,8 +67,6 @@
                                      dvirdgndt,                 &
                                      araftn,       vraftn)
 
-      ! use ice_colpkg_tracers, only: nt_qice, nt_qsno, nt_fbri, nt_sice
-
 !
 ! !INPUT/OUTPUT PARAMETERS:
 !
@@ -76,18 +74,18 @@
          dt     , & ! time step
          dice   , & ! fractional area to be ridged (displaced)
          bice   , & ! fractional berg (and shelf) area
-         mu_rdg     ! gives e-folding scale of ridged ice (m^.5) 
+         mu_rdg     ! gives e-folding scale of ridged ice (m^.5)
 
       integer (kind=int_kind), intent(in) :: &
          ncat   , & ! number of thickness categories
-         n_aero , & ! number of aerosol tracers         
+         n_aero , & ! number of aerosol tracers
          nilyr  , & ! number of ice layers
          nslyr  , & ! number of snow layers
-         ! nblyr  , & ! number of snow layers         
-         ntrcr      ! number of tracers in use          
+         ! nblyr  , & ! number of bio layers
+         ntrcr      ! number of tracers in use
 
       real (kind=dbl_kind), dimension(0:ncat), intent(inout) :: &
-         hin_max   ! category limits (m)         
+         hin_max   ! category limits (m)
 
       real (kind=dbl_kind), dimension (ncat), intent(inout) :: &
          aicen , & ! concentration of ice
@@ -95,7 +93,7 @@
          vsnon     ! volume per unit area of snow         (m)
 
       real (kind=dbl_kind), dimension (:,:), intent(inout) :: &
-         btrcrn             ! temporary array for tracers  
+         btrcrn             ! temporary array for tracers
  
       real (kind=dbl_kind), intent(inout) :: & 
          aice0     ! concentration of open water
@@ -115,14 +113,14 @@
          l_stop   ! if true, abort on return
 
       character (char_len), intent(out) :: &
-         stop_label     ! diagnostic information for abort                      
+         stop_label     ! diagnostic information for abort
 
       integer (kind=int_kind), intent(in) :: &
          krdg_partic  , & ! selects participation function
          krdg_redist      ! selects redistribution function 
 
       logical (kind=log_kind), intent(in) :: &
-         tr_brine       ! if .true., brine height differs from ice thickness           
+         tr_brine       ! if .true., brine height differs from ice thickness
 
       ! optional history fields
       real (kind=dbl_kind), intent(inout), optional :: &
@@ -130,7 +128,7 @@
          dardg2dt  , & ! rate of fractional area gain by new ridges (1/s)
          dvirdgdt  , & ! rate of ice volume ridged (m/s)
          opening   , & ! rate of opening due to divergence/shear (1/s)
-         fpond     , & ! fresh water flux to ponds (kg/m^2/s)         
+         fpond     , & ! fresh water flux to ponds (kg/m^2/s)
          fresh     , & ! fresh water flux to ocean (kg/m^2/s)
          fhocn         ! net heat flux to ocean (W/m^2)
 
@@ -146,16 +144,15 @@
          vredistn       ! redistribution function: fraction of new ridge volume
 
       real (kind=dbl_kind), dimension(:), intent(inout), optional :: &
-         faero_ocn      ! aerosol flux to ocean (kg/m^2/s)         
+         faero_ocn      ! aerosol flux to ocean (kg/m^2/s)
 
       ! local variables
 
       real (kind=dbl_kind), dimension (ncat) :: &
          eicen      , & ! energy of melting for each ice layer (J/m^2)
-         esnon      , & ! energy of melting for each snow layer (J/m^2)          
+         esnon      , & ! energy of melting for each snow layer (J/m^2)
          vbrin      , & ! ice volume with defined by brine height (m)
-         sicen          ! Bulk salt in h ice (ppt*m) 
-
+         sicen          ! Bulk salt in h ice (ppt*m)
 
       ! variables for ridging routines
       real (kind=dbl_kind) :: &
@@ -163,7 +160,7 @@
          aksum      , & ! ratio of area removed to area ridged
          msnow_mlt  , & ! mass of snow added to ocean (kg m-2)
          esnow_mlt  , & ! energy needed to melt snow in ocean (J m-2)
-         mpond      , & ! mass of pond added to ocean (kg m-2)         
+         mpond      , & ! mass of pond added to ocean (kg m-2)
          closing_net, & ! net rate at which area is removed    (1/s)
                         ! (ridging ice area - area of new ridges) / dt
          divu_adv   , & ! divu as implied by transport scheme  (1/s)
@@ -173,7 +170,7 @@
          ardg1      , & ! fractional area loss by ridging ice
          ardg2      , & ! fractional area gain by new ridges
          virdg      , & ! ice volume ridged
-         aopen          ! area opening due to divergence/shear     
+         aopen          ! area opening due to divergence/shear
 
       real (kind=dbl_kind), dimension (n_aero) :: &
          maero          ! aerosol mass added to ocean (kg m-2)
@@ -197,7 +194,7 @@
          vsno_init, vsno_final, & ! snow volume summed over categories
          eice_init, eice_final, & ! ice energy summed over layers
          vbri_init, vbri_final, & ! ice volume in fbri*vicen summed over categories
-         sice_init ,sice_final, & ! ice bulk salinity summed over categories         
+         sice_init ,sice_final, & ! ice bulk salinity summed over categories
          esno_init, esno_final    ! snow energy summed over layers
 
       integer (kind=int_kind), parameter :: &
@@ -220,7 +217,11 @@
          fieldid            ! field identifier
 
       character(len=char_len_long) :: &
-         warning ! warning message       
+         warning ! warning message
+! !dcmod
+!       ! temporary for open water
+!       real (kind=dbl_kind) :: &
+!          aice0tmp           ! sum of ice and open water area (without bergs)
 
       !-----------------------------------------------------------------
       ! Initialize
@@ -245,29 +246,10 @@
       opning      = c0
       asum = c0
 
-      ! !-----------------------------------------------------------------
-      ! ! Compute area of ice plus open water before ridging.
-      ! !-----------------------------------------------------------------
-
-      ! call asum_ridging (ncat, aicen, aice0, asum)
-      ! ! dcmod - adjust with berg area
-      ! asum = asum + bice
-
-      ! !-----------------------------------------------------------------
-      ! ! Compute the area opening and closing.
-      ! !-----------------------------------------------------------------
-
-      ! call ridge_prep (dt,                      &
-      !                  ncat,      hin_max,      &
-      !                  rdg_conv,  rdg_shear,    &
-      !                  asum,      closing_net,  &
-      !                  divu_adv,  opning)      
-
       !-----------------------------------------------------------------
       ! Compute initial values of conserved quantities. 
       !-----------------------------------------------------------------
-!dcmod
-aice0 = aice0 + bice
+
       if (l_conservation_check) then
 
          do n = 1, ncat
@@ -296,9 +278,9 @@ aice0 = aice0 + bice
          call column_sum (ncat, eicen(:), eice_init)
          call column_sum (ncat, esnon(:), esno_init)
          call column_sum (ncat, sicen(:), sice_init)
-         call column_sum (ncat, vbrin(:), vbri_init)         
+         call column_sum (ncat, vbrin(:), vbri_init)
 
-      endif ! conservation check           
+      endif ! conservation check
 
       do niter = 1, nitermax
 
@@ -306,7 +288,7 @@ aice0 = aice0 + bice
       ! Compute the thickness distribution of ridging ice
       ! and various quantities associated with the new ridged ice.
       !-----------------------------------------------------------------
-! dcmod - need to add bice to open water here?
+
          call ridge_itd (ncat,        aice0,       &
                          aicen(:),    vicen(:),    &
                          krdg_partic, krdg_redist, &
@@ -320,7 +302,7 @@ aice0 = aice0 + bice
       !-----------------------------------------------------------------
       ! Compute the area opening and closing.
       !-----------------------------------------------------------------
-!dcmod - sure sign is correct?
+
          closing_net = dice/dt  ! net closing rate
          divu_adv = -closing_net
          opning = c0
@@ -358,13 +340,15 @@ aice0 = aice0 + bice
       !-----------------------------------------------------------------
 
          call asum_ridging (ncat, aicen(:), aice0, asum)
-         ! dcmod - adjust with berg area
+         ! ! dcmod - adjust with berg area - note this will be < 1
          ! asum = asum + bice
-         if (abs(asum - c1) < puny) then           
+         if (abs(asum - c1) < puny) then
             iterate_ridging = .false.
             closing_net = c0
             opning      = c0
          else
+            ! write(warning,*) 'ridging loop (bergs), abs(asum-1):', abs(asum - c1)
+            ! call add_warning(warning)
             iterate_ridging = .true.
             divu_adv = (c1 - asum) / dt
             closing_net = max(c0, -divu_adv)
@@ -377,14 +361,13 @@ aice0 = aice0 + bice
 
          if (iterate_ridging) then
             write(warning,*) 'Repeat ridging (bergs), niter =', niter
-            write(warning,*) 'asum =', asum
-            write(warning,*) 'aicen =', asum - aice0
-            write(warning,*) 'aice0 =', aice0
+            call add_warning(warning)
+            write(warning,*) 'area (inc. bergs):', asum + bice
             call add_warning(warning)
          else
             ! exit rdg_iteration
             exit
-         endif         
+         endif
 
          if (niter == nitermax) then
             write(warning,*) ' '
@@ -411,7 +394,7 @@ aice0 = aice0 + bice
          eicen(n) = c0
          esnon(n) = c0
          sicen(n) = c0
-         vbrin(n) = c0         
+         vbrin(n) = c0
 
          do k = 1, nilyr
             eicen(n) = eicen(n) + btrcrn(nt_qice+k-1,n) &
@@ -464,7 +447,7 @@ aice0 = aice0 + bice
                                          puny*Lfresh*rhos,      &
                                          l_stop)
          if (l_stop) return
-         
+
       endif ! l_conservation_check
 
       !-----------------------------------------------------------------
@@ -511,7 +494,7 @@ aice0 = aice0 + bice
          do n = 1, ncat
             vraftn(n) = mraftn(n)*virdgn(n)
          enddo
-      endif      
+      endif
 
       !-----------------------------------------------------------------
       ! Update fresh water and heat fluxes due to snow melt.
@@ -530,7 +513,7 @@ aice0 = aice0 + bice
       endif
       if (present(fpond)) then
          fpond = fpond - mpond ! units change later
-      endif      
+      endif
 
       !-----------------------------------------------------------------
       ! Check for fractional ice area > 1.
@@ -538,8 +521,8 @@ aice0 = aice0 + bice
 
       call asum_ridging (ncat, aicen(:), aice0, asum)
       ! dcmod - adjust with berg area
-      ! asum = asum + bice
-      if (abs(asum - c1) > puny) then      
+      asum = asum + bice
+      if (abs(asum - c1) > puny) then
          l_stop = .true.
 
          write(warning,*) ' '
@@ -558,9 +541,6 @@ aice0 = aice0 + bice
          enddo
          return
       endif
-
-!dcmod
-aice0 = aice0 - bice
 
       end subroutine ridge_ice_by_bergs
 
