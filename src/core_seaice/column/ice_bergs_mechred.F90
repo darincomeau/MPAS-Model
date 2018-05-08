@@ -218,10 +218,6 @@
 
       character(len=char_len_long) :: &
          warning ! warning message
-! !dcmod
-!       ! temporary for open water
-!       real (kind=dbl_kind) :: &
-!          aice0tmp           ! sum of ice and open water area (without bergs)
 
       !-----------------------------------------------------------------
       ! Initialize
@@ -339,16 +335,22 @@
       ! with new rates.
       !-----------------------------------------------------------------
 
+         ! dcmod - adjust with berg area
          call asum_ridging (ncat, aicen(:), aice0, asum)
-         ! ! dcmod - adjust with berg area - note this will be < 1
-         ! asum = asum + bice
+         asum = asum + bice
+
+         ! dcmod - if less than 1 due to forced ridging, add missing area back to open water
+         if (asum < c1) aice0 = aice0 + (c1 - asum)
+
+         ! check sum again
+         call asum_ridging (ncat, aicen(:), aice0, asum)
+         asum = asum + bice
+
          if (abs(asum - c1) < puny) then
             iterate_ridging = .false.
             closing_net = c0
             opning      = c0
          else
-            ! write(warning,*) 'ridging loop (bergs), abs(asum-1):', abs(asum - c1)
-            ! call add_warning(warning)
             iterate_ridging = .true.
             divu_adv = (c1 - asum) / dt
             closing_net = max(c0, -divu_adv)
@@ -362,8 +364,13 @@
          if (iterate_ridging) then
             write(warning,*) 'Repeat ridging (bergs), niter =', niter
             call add_warning(warning)
-            write(warning,*) 'area (inc. bergs):', asum + bice
-            call add_warning(warning)
+            ! ! dcmod debugging messages
+            ! write(warning,*) 'area (inc. bergs):', asum
+            ! call add_warning(warning)
+            ! write(warning,*) 'ice:', asum - bice - aice0
+            ! call add_warning(warning)
+            ! write(warning,*) 'open water:', aice0
+            ! call add_warning(warning)
          else
             ! exit rdg_iteration
             exit
