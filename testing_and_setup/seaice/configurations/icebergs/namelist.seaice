@@ -331,22 +331,22 @@
     config_berg_annual_calving_frequency = 12.0
     config_berg_initial_uvelocity_geo = 0.0
     config_berg_initial_vvelocity_geo = 0.0
-    config_use_berg_velocity_solver = true
+    config_use_berg_velocity_solver = false
     config_berg_velocity_subcycle_number = 30
     config_berg_ice_concentration_threshold = 0.9
     config_berg_ice_min_concentration_threshold = 0.15
     config_berg_ice_strength_threshold = 1000.0
     config_berg_temperature = -4.0
     config_berg_velocity_solver_type = 'forward_euler'
-    config_use_berg_decay = true
+    config_use_berg_decay = false
     config_berg_horizontal_shape = 'tabular_1:1.5'
     config_berg_density = 850.0
     config_specific_heat_fresh_ice = 2106.0
-    config_berg_allow_rollover = true
-    config_use_berg_advection = true
-    config_berg_advection_outside_velocity_subcycling = true
-    config_berg_update_open_water = true
-    config_berg_seaice_interaction = true
+    config_berg_allow_rollover = false
+    config_use_berg_advection = false
+    config_berg_advection_outside_velocity_subcycling = false
+    config_berg_update_open_water = false
+    config_berg_seaice_interaction = false
 /
 &AM_highFrequencyOutput
     config_AM_highFrequencyOutput_enable = false
