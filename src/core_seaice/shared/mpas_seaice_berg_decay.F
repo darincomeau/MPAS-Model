@@ -387,7 +387,7 @@ contains
          nCellsSolve, &
          nBergCategories
 
-    real, pointer :: &
+    real(kind=RKIND), pointer :: &
          bergTemperature ! berg temperature, assumed constant
 
     integer :: &
