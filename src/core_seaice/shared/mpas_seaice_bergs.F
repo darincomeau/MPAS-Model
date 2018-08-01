@@ -62,11 +62,14 @@ contains
          domain !< Input/Output:
 
     logical, pointer :: &
-         config_use_bergs ! flag to turn on / off iceberg model
+         config_use_bergs, & ! flag to turn on / off iceberg model
+         config_do_restart   ! flag if restart
 
     call MPAS_pool_get_config(domain % configs, "config_use_bergs", config_use_bergs)
+    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
 
-    if (config_use_bergs) then
+    ! initial run
+    if (config_use_bergs .and. .not. config_do_restart) then
 
        call mpas_timer_start("Berg initialization")
 
@@ -80,6 +83,12 @@ contains
        call seaice_init_berg_tracers(domain)
 
        call mpas_timer_stop("Berg initialization")
+
+    ! restart run
+    elseif (config_use_bergs .and. config_do_restart) then
+
+       ! tracers still need to be initialized in restarts
+       call seaice_init_berg_tracers(domain)
 
     endif
 
