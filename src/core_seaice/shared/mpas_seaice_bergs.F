@@ -68,13 +68,18 @@ contains
     call MPAS_pool_get_config(domain % configs, "config_use_bergs", config_use_bergs)
     call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
 
-    ! initial run
-    if (config_use_bergs .and. .not. config_do_restart) then
+
+    if (config_use_bergs) then
 
        call mpas_timer_start("Berg initialization")
 
-       ! initialize calving fluxes
-       call seaice_init_berg_calving_fluxes(domain)
+       ! initial run
+       if (.not. config_do_restart) then
+
+          ! initialize calving fluxes
+          call seaice_init_berg_calving_fluxes(domain)
+
+       endif
 
        ! initialize velocity solver
        call seaice_init_berg_velocity_solver(domain)
@@ -83,15 +88,6 @@ contains
        call seaice_init_berg_tracers(domain)
 
        call mpas_timer_stop("Berg initialization")
-
-    ! restart run
-    elseif (config_use_bergs .and. config_do_restart) then
-
-       ! initialize velocity solver
-       call seaice_init_berg_velocity_solver(domain)
-
-       ! tracers still need to be initialized in restarts
-       call seaice_init_berg_tracers(domain)
 
     endif
 

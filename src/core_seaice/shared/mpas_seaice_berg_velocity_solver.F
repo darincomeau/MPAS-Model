@@ -63,6 +63,42 @@ contains
     type(block_type), pointer :: &
          block
 
+    logical, pointer :: &
+         config_do_restart
+
+    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
+
+    ! set timesteps and initialize velocities
+    block => domain % blocklist
+    do while (associated(block))
+
+       ! calculate berg timesteps
+       call init_berg_timesteps(block)
+
+       ! if initial run, initialize berg velocities
+       if (.not. config_do_restart) call init_berg_velocity(block)
+
+       block => block % next
+    enddo
+
+  end subroutine seaice_init_berg_velocity_solver
+
+!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+!
+!  init_berg_timesteps
+!
+!> \brief   Initialize berg timesteps
+!> \author  Darin Comeau, LANL
+!> \date    Aug 3, 2018
+!> \details This subroutine initializes iceberg timesteps.
+!
+!-----------------------------------------------------------------------
+
+  subroutine init_berg_timesteps(block)
+
+    type(block_type), intent(inout) :: &
+         block
+
     type(MPAS_pool_type), pointer :: &
          bergVelocitySolverPool
 
@@ -76,45 +112,33 @@ contains
          config_berg_velocity_subcycle_number ! berg subcycling number
 
     logical, pointer :: &
-         config_do_restart, &
          config_berg_advection_outside_velocity_subcycling
 
-    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
+    call MPAS_pool_get_config(block % configs, "config_dt", config_dt)
+    call MPAS_pool_get_config(block % configs, "config_dynamics_subcycle_number", config_dynamics_subcycle_number)
+    call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
+    call MPAS_pool_get_config(block % configs, "config_berg_advection_outside_velocity_subcycling", config_berg_advection_outside_velocity_subcycling)
 
-    ! set timesteps and initialize velocities
-    block => domain % blocklist
-    do while (associated(block))
+    call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
+    call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityTimeStep", bergVelocityTimeStep)
+    call MPAS_pool_get_array(bergVelocitySolverPool, "bergAdvectionTimeStep", bergAdvectionTimeStep)
 
-       call MPAS_pool_get_config(block % configs, "config_dt", config_dt)
-       call MPAS_pool_get_config(block % configs, "config_dynamics_subcycle_number", config_dynamics_subcycle_number)
-       call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
-       call MPAS_pool_get_config(block % configs, "config_berg_advection_outside_velocity_subcycling", config_berg_advection_outside_velocity_subcycling)
+    ! berg velocity solver is inside sea ice dynamics loop in seaice_time_integration
+    bergVelocityTimeStep = config_dt / (real(config_berg_velocity_subcycle_number,RKIND) * &
+                                        real(config_dynamics_subcycle_number,RKIND))
 
-       call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityTimeStep", bergVelocityTimeStep)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "bergAdvectionTimeStep", bergAdvectionTimeStep)
+    if (config_berg_advection_outside_velocity_subcycling) then
 
-       ! berg velocity solver is inside sea ice dynamics loop in seaice_time_integration
-       bergVelocityTimeStep = config_dt / (real(config_berg_velocity_subcycle_number,RKIND) * &
-                                           real(config_dynamics_subcycle_number,RKIND))
+      ! berg advection is inside sea ice dynamics loop in seaice_time_integration
+      bergAdvectionTimeStep = config_dt / (real(config_dynamics_subcycle_number,RKIND))
 
-       if (config_berg_advection_outside_velocity_subcycling) then
+    else ! advection inside subcycling, advection timestep same as velocity solver timestep
 
-          ! berg advection is inside sea ice dynamics loop in seaice_time_integration
-          bergAdvectionTimeStep = config_dt / (real(config_dynamics_subcycle_number,RKIND))
+      bergAdvectionTimeStep = bergVelocityTimeStep
 
-       else ! advection inside subcycling, advection timestep same as velocity solver timestep
+    endif ! config_berg_advection_outside_velocity_subcycling
 
-          bergAdvectionTimeStep = bergVelocityTimeStep
-
-       endif ! config_berg_advection_outside_velocity_subcycling
-
-       if (.not. config_do_restart) call init_berg_velocity(block)
-
-       block => block % next
-    enddo
-
-  end subroutine seaice_init_berg_velocity_solver
+  end subroutine init_berg_timesteps
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
