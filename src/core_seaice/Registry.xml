@@ -1841,8 +1841,6 @@
 			<var name="bergMassCell"/>
 			<var name="uBergVelocity"/>
 			<var name="vBergVelocity"/>
-			<var name="bergVelocityTimeStep"/>
-			<var name="bergAdvectionTimeStep"/>
 			<var name="bergCalvingMask"/>
 			<var name="bergCalvingMass"/>
 			<var name="bergCalvingFlux"/>

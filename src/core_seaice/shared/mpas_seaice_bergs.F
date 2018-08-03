@@ -87,6 +87,9 @@ contains
     ! restart run
     elseif (config_use_bergs .and. config_do_restart) then
 
+       ! initialize velocity solver
+       call seaice_init_berg_velocity_solver(domain)
+
        ! tracers still need to be initialized in restarts
        call seaice_init_berg_tracers(domain)
 

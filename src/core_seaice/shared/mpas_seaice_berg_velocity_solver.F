@@ -76,7 +76,10 @@ contains
          config_berg_velocity_subcycle_number ! berg subcycling number
 
     logical, pointer :: &
+         config_do_restart, &
          config_berg_advection_outside_velocity_subcycling
+
+    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
 
     ! set timesteps and initialize velocities
     block => domain % blocklist
@@ -106,7 +109,7 @@ contains
 
        endif ! config_berg_advection_outside_velocity_subcycling
 
-       call init_berg_velocity(block)
+       if (.not. config_do_restart) call init_berg_velocity(block)
 
        block => block % next
     enddo
@@ -1061,7 +1064,6 @@ contains
     call mpas_timer_start("Berg velocity solver halo")
     call MPAS_dmpar_field_halo_exch(domain, 'uAirVelocity')
     call MPAS_dmpar_field_halo_exch(domain, 'vAirVelocity')
-    call MPAS_dmpar_field_halo_exch(domain, 'airDensity')
     call mpas_timer_stop("Berg velocity solver halo")
 
     block => domain % blocklist
