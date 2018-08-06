@@ -63,6 +63,42 @@ contains
     type(block_type), pointer :: &
          block
 
+    logical, pointer :: &
+         config_do_restart
+
+    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
+
+    ! set timesteps and initialize velocities
+    block => domain % blocklist
+    do while (associated(block))
+
+       ! calculate berg timesteps
+       call init_berg_timesteps(block)
+
+       ! if initial run, initialize berg velocities
+       if (.not. config_do_restart) call init_berg_velocity(block)
+
+       block => block % next
+    enddo
+
+  end subroutine seaice_init_berg_velocity_solver
+
+!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+!
+!  init_berg_timesteps
+!
+!> \brief   Initialize berg timesteps
+!> \author  Darin Comeau, LANL
+!> \date    Aug 3, 2018
+!> \details This subroutine initializes iceberg timesteps.
+!
+!-----------------------------------------------------------------------
+
+  subroutine init_berg_timesteps(block)
+
+    type(block_type), intent(inout) :: &
+         block
+
     type(MPAS_pool_type), pointer :: &
          bergVelocitySolverPool
 
@@ -78,40 +114,31 @@ contains
     logical, pointer :: &
          config_berg_advection_outside_velocity_subcycling
 
-    ! set timesteps and initialize velocities
-    block => domain % blocklist
-    do while (associated(block))
+    call MPAS_pool_get_config(block % configs, "config_dt", config_dt)
+    call MPAS_pool_get_config(block % configs, "config_dynamics_subcycle_number", config_dynamics_subcycle_number)
+    call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
+    call MPAS_pool_get_config(block % configs, "config_berg_advection_outside_velocity_subcycling", config_berg_advection_outside_velocity_subcycling)
 
-       call MPAS_pool_get_config(block % configs, "config_dt", config_dt)
-       call MPAS_pool_get_config(block % configs, "config_dynamics_subcycle_number", config_dynamics_subcycle_number)
-       call MPAS_pool_get_config(block % configs, "config_berg_velocity_subcycle_number", config_berg_velocity_subcycle_number)
-       call MPAS_pool_get_config(block % configs, "config_berg_advection_outside_velocity_subcycling", config_berg_advection_outside_velocity_subcycling)
+    call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
+    call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityTimeStep", bergVelocityTimeStep)
+    call MPAS_pool_get_array(bergVelocitySolverPool, "bergAdvectionTimeStep", bergAdvectionTimeStep)
 
-       call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "bergVelocityTimeStep", bergVelocityTimeStep)
-       call MPAS_pool_get_array(bergVelocitySolverPool, "bergAdvectionTimeStep", bergAdvectionTimeStep)
+    ! berg velocity solver is inside sea ice dynamics loop in seaice_time_integration
+    bergVelocityTimeStep = config_dt / (real(config_berg_velocity_subcycle_number,RKIND) * &
+                                        real(config_dynamics_subcycle_number,RKIND))
 
-       ! berg velocity solver is inside sea ice dynamics loop in seaice_time_integration
-       bergVelocityTimeStep = config_dt / (real(config_berg_velocity_subcycle_number,RKIND) * &
-                                           real(config_dynamics_subcycle_number,RKIND))
+    if (config_berg_advection_outside_velocity_subcycling) then
 
-       if (config_berg_advection_outside_velocity_subcycling) then
+      ! berg advection is inside sea ice dynamics loop in seaice_time_integration
+      bergAdvectionTimeStep = config_dt / (real(config_dynamics_subcycle_number,RKIND))
 
-          ! berg advection is inside sea ice dynamics loop in seaice_time_integration
-          bergAdvectionTimeStep = config_dt / (real(config_dynamics_subcycle_number,RKIND))
+    else ! advection inside subcycling, advection timestep same as velocity solver timestep
 
-       else ! advection inside subcycling, advection timestep same as velocity solver timestep
+      bergAdvectionTimeStep = bergVelocityTimeStep
 
-          bergAdvectionTimeStep = bergVelocityTimeStep
+    endif ! config_berg_advection_outside_velocity_subcycling
 
-       endif ! config_berg_advection_outside_velocity_subcycling
-
-       call init_berg_velocity(block)
-
-       block => block % next
-    enddo
-
-  end subroutine seaice_init_berg_velocity_solver
+  end subroutine init_berg_timesteps
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
@@ -295,12 +322,6 @@ contains
 
     endif
 
-    ! halo exchange
-    call mpas_timer_start("Berg velocity solver halo")
-    call MPAS_dmpar_field_halo_exch(domain, 'uBergVelocity')
-    call MPAS_dmpar_field_halo_exch(domain, 'vBergVelocity')
-    call mpas_timer_stop("Berg velocity solver halo")
-
   end subroutine seaice_run_berg_velocity_solver
 
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
@@ -443,6 +464,11 @@ contains
     integer :: &
          iCategory
 
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'bergMassCategory')
+    call mpas_timer_stop("Berg velocity solver halo")
+
     ! interpolate area and mass from cells to vertices
     block => domain % blocklist
     do while (associated(block))
@@ -469,13 +495,13 @@ contains
        block => block % next
     end do
 
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'bergMassVertex')
+    call mpas_timer_stop("Berg velocity solver halo")
+
     ! calculate computational masks
     call berg_velocity_calculation_mask(domain)
-
-    ! halo exchange velocity mask
-    call mpas_timer_start("berg velocity mask halo")
-    call MPAS_dmpar_field_halo_exch(domain, 'bergVelocityMask')
-    call mpas_timer_stop("berg velocity mask halo")
 
   end subroutine berg_calculation_masks
 
@@ -814,6 +840,40 @@ contains
 
        enddo ! iCell
 
+       block => block % next
+    enddo ! block
+
+    ! halo exchanges for interpolated quantities
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'bergDraft')
+    call MPAS_dmpar_field_halo_exch(domain, 'oneBergArea')
+    call MPAS_dmpar_field_halo_exch(domain, 'oneBergMass')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergAirContactArea')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergOcnContactArea')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergIceContactArea')
+    call mpas_timer_stop("Berg velocity solver halo")
+
+    block => domain % blocklist
+    do while (associated(block))
+
+       call MPAS_pool_get_dimension(block % dimensions, "nCellsSolve", nCellsSolve)
+       call MPAS_pool_get_dimension(block % dimensions, "nBergCategories", nBergCategories)
+
+       call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocityPool)
+
+       call MPAS_pool_get_array(bergVelocityPool, "bergDraft", bergDraft)
+       call MPAS_pool_get_array(bergVelocityPool, "oneBergArea", oneBergArea)
+       call MPAS_pool_get_array(bergVelocityPool, "oneBergMass", oneBergMass)
+       call MPAS_pool_get_array(bergVelocityPool, "bergDraftVertex", bergDraftVertex)
+       call MPAS_pool_get_array(bergVelocityPool, "oneBergAreaVertex", oneBergAreaVertex)
+       call MPAS_pool_get_array(bergVelocityPool, "oneBergMassVertex", oneBergMassVertex)
+       call MPAS_pool_get_array(bergVelocityPool, "bergAirContactArea", bergAirContactArea)
+       call MPAS_pool_get_array(bergVelocityPool, "bergOcnContactArea", bergOcnContactArea)
+       call MPAS_pool_get_array(bergVelocityPool, "bergIceContactArea", bergIceContactArea)
+       call MPAS_pool_get_array(bergVelocityPool, "bergAirContactAreaVertex", bergAirContactAreaVertex)
+       call MPAS_pool_get_array(bergVelocityPool, "bergOcnContactAreaVertex", bergOcnContactAreaVertex)
+       call MPAS_pool_get_array(bergVelocityPool, "bergIceContactAreaVertex", bergIceContactAreaVertex)
+
        do iCategory = 1, nBergCategories
 
           ! interpolate from cells to vertices
@@ -847,10 +907,20 @@ contains
              bergIceContactAreaVertex(iCategory,:), &
              bergIceContactArea(iCategory,:))
 
-          enddo
+       enddo
 
        block => block % next
-    end do ! block
+    enddo ! block
+
+    ! halo exchanges for interpolated quantities
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'bergDraftVertex')
+    call MPAS_dmpar_field_halo_exch(domain, 'oneBergAreaVertex')
+    call MPAS_dmpar_field_halo_exch(domain, 'oneBergMassVertex')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergAirContactAreaVertex')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergOcnContactAreaVertex')
+    call MPAS_dmpar_field_halo_exch(domain, 'bergIceContactAreaVertex')
+    call mpas_timer_stop("Berg velocity solver halo")
 
   end subroutine berg_vertical_areas
 
@@ -1014,6 +1084,12 @@ contains
          airVertDragCoef = 0.2_RKIND, &
          airHorizDragCoef = 0.00025_RKIND
 
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'uAirVelocity')
+    call MPAS_dmpar_field_halo_exch(domain, 'vAirVelocity')
+    call mpas_timer_stop("Berg velocity solver halo")
+
     block => domain % blocklist
     do while (associated(block))
 
@@ -1150,6 +1226,12 @@ contains
          ocnVertDragCoef = 0.425_RKIND, &
          ocnHorizDragCoef = 0.0005_RKIND
 
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'uOceanVelocity')
+    call MPAS_dmpar_field_halo_exch(domain, 'vOceanVelocity')
+    call mpas_timer_stop("Berg velocity solver halo")
+
     block => domain % blocklist
     do while (associated(block))
 
@@ -1213,7 +1295,7 @@ contains
        enddo ! iVertex
 
        block => block % next
-    end do
+    enddo
 
   end subroutine berg_ocn_forcing
 
@@ -1513,6 +1595,12 @@ contains
          iVertex, &
          iCategory
 
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'seaSurfaceTiltU')
+    call MPAS_dmpar_field_halo_exch(domain, 'seaSurfaceTiltU')
+    call mpas_timer_stop("Berg velocity solver halo")
+
     block => domain % blocklist
     do while (associated(block))
 
@@ -1565,7 +1653,7 @@ contains
        enddo ! iVertex
 
        block => block % next
-    end do
+    enddo
 
   end subroutine berg_tlt_forcing
 
@@ -1627,6 +1715,7 @@ contains
          nVerticesSolve, &
          nBergCategories
 
+    ! local variables
     integer :: &
          iVertex, &
          iCategory
@@ -1634,6 +1723,7 @@ contains
     real(kind=RKIND) :: &
          rightSideU, &
          rightSideV
+
 
     block => domain % blocklist
     do while (associated(block))
@@ -1668,6 +1758,9 @@ contains
        do iVertex = 1, nVerticesSolve
 
           do iCategory = 1, nBergCategories
+
+             rightSideU = 0.0_RKIND
+             rightSideV = 0.0_RKIND
 
              ! check if velocity should be solved
              if (bergVelocityMask(iCategory,iVertex) == 1 .and. oneBergMassVertex(iCategory,iVertex) > seaicePuny) then
@@ -1811,6 +1904,7 @@ contains
 
     call MPAS_pool_get_config(domain % configs, "config_berg_density", bergDensity)
 
+
     block => domain % blocklist
     do while (associated(block))
 
@@ -1939,11 +2033,6 @@ contains
 
        block => block % next
     enddo
-
-    ! halo exchange
-    call mpas_timer_start("Berg velocity solver halo")
-    call MPAS_dmpar_field_halo_exch(domain, 'bergDisplacedArea')
-    call mpas_timer_stop("Berg velocity solver halo")  
 
   end subroutine seaice_berg_forcing_for_ice
 

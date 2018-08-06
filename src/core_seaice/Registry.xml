@@ -1828,17 +1828,25 @@
 			<var name="mobileFraction"/>
 			<var name="newlyFormedIce"/>
 			<var name="maximumIcePresence"/>
-			<var name="bergAreaCategory"/>
-			<var name="bergMassCategory"/>
-			<var name="bergLength"/>
-			<var name="bergHeight"/>
-			<var name="uBergVelocity"/>
-			<var name="vBergVelocity"/>
 			<var name="testArrayRegression"/>
 			<var name="testArrayParallelism"/>
 			<var name="testArrayRestartability"/>
 			<var name="forcingGroupNames"/>
 			<var name="forcingGroupRestartTimes"/>
+			<var name="bergAreaCategory"/>
+			<var name="bergLength"/>
+			<var name="bergHeight"/>
+			<var name="bergAreaCell"/>
+			<var name="bergMassCategory"/>
+			<var name="bergMassCell"/>
+			<var name="uBergVelocity"/>
+			<var name="vBergVelocity"/>
+			<var name="bergCalvingMask"/>
+			<var name="bergCalvingMass"/>
+			<var name="bergCalvingFlux"/>
+			<var name="bergCalvingDistribution"/>
+			<var name="bergCalvingLength"/>
+			<var name="bergCalvingHeight"/>
 		</stream>
 
 		<stream name="restart"
@@ -3970,7 +3978,7 @@
 	<!-- iceberg velocity solver -->
 	<var_struct name="berg_velocity_solver" time_levs="1" packages="pkgBergs">
 		<var name="bergVelocityTimeStep"		type="real"		dimensions=""								name_in_code="bergVelocityTimeStep"			units="s"		packages="pkgBergs"/>
-		<var name="bergAdvectionTimeStep"		type="real"		dimensions=""								name_in_code="bergAdvectionTimeStep"			units="s"		packages="pkgBergs"/>
+		<var name="bergAdvectionTimeStep"		type="real"		dimensions=""								name_in_code="bergAdvectionTimeStep"		units="s"		packages="pkgBergs"/>
 		<var name="uBergVelocity"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="uBergVelocity"				units="m/s"		packages="pkgBergs"/>
 		<var name="vBergVelocity"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="vBergVelocity"				units="m/s"		packages="pkgBergs"/>
 		<var name="uBergVelocityCell"			type="real"		dimensions="nBergCategories nCells Time"	name_in_code="uBergVelocityCell"			units="m/s"		packages="pkgBergs"/>
@@ -3994,12 +4002,12 @@
 		<var name="uAirVelocityVertex"			type="real"		dimensions="nVertices Time"					name_in_code="uAirVelocityVertex"			units="m/s"		packages="pkgBergs"/>
 		<var name="vAirVelocityVertex"			type="real"		dimensions="nVertices Time"					name_in_code="vAirVelocityVertex"			units="m/s"		packages="pkgBergs"/>
 		<var name="airDensityVertex"			type="real"		dimensions="nVertices Time"					name_in_code="airDensityVertex"				units="kg/m^3"	packages="pkgBergs"/>
-		<var name="bergAreaVertex"	type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergAreaVertex"		units="m^2"		packages="pkgBergs"/>
-		<var name="bergLengthVertex"	type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergLengthVertex"		units="m"		packages="pkgBergs"/>
-		<var name="bergCoefForIceU"	type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefForIceU"		units="kg*m/s^2"		packages="pkgBergs"/>
-		<var name="bergCoefForIceV"	type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefForIceV"		units="kg*m/s^2"		packages="pkgBergs"/>
-		<var name="bergStressU"	type="real"		dimensions="nVertices Time"	name_in_code="bergStressU"		units="kg*m/s^2"		packages="pkgBergs"/>
-		<var name="bergStressV"	type="real"		dimensions="nVertices Time"	name_in_code="bergStressV"		units="kg*m/s^2"		packages="pkgBergs"/>
+		<var name="bergAreaVertex"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergAreaVertex"				units="m^2"		packages="pkgBergs"/>
+		<var name="bergLengthVertex"			type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergLengthVertex"				units="m"		packages="pkgBergs"/>
+		<var name="bergCoefForIceU"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefForIceU"				units="kg*m/s^2"	packages="pkgBergs"/>
+		<var name="bergCoefForIceV"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefForIceV"				units="kg*m/s^2"	packages="pkgBergs"/>
+		<var name="bergStressU"					type="real"		dimensions="nVertices Time"					name_in_code="bergStressU"					units="kg*m/s^2"	packages="pkgBergs"/>
+		<var name="bergStressV"					type="real"		dimensions="nVertices Time"					name_in_code="bergStressV"					units="kg*m/s^2"	packages="pkgBergs"/>
 		<var name="bergCoefAtmU"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefAtmU"					units="kg*m/s^2"	packages="pkgBergs"/>
 		<var name="bergCoefAtmV"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefAtmV"					units="kg*m/s^2"	packages="pkgBergs"/>
 		<var name="bergCoefOcnU"				type="real"		dimensions="nBergCategories nVertices Time"	name_in_code="bergCoefOcnU"					units="kg*m/s^2"	packages="pkgBergs"/>
