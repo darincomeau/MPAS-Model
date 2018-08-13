@@ -1973,8 +1973,8 @@ contains
 
                 ! if > 0, angle between two velocities is less than 90 degrees
                 ! if < 0, angle between two velocities is greater than 90 degrees
-                dotProductNum = uBergVelocity(iVertex, iCategory) * uVelocity(iVertex) + &
-                                vBergVelocity(iVertex, iCategory) * vVelocity(iVertex)
+                dotProductNum = uBergVelocity(iCategory, iVertex) * uVelocity(iVertex) + &
+                                vBergVelocity(iCategory, iVertex) * vVelocity(iVertex)
 
                 if (dotProductNum < 0.0_RKIND) then
                 ! bergs and sea ice are moving in opposing direction, sea ice has additional term in
