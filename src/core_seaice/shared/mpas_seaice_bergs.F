@@ -62,16 +62,24 @@ contains
          domain !< Input/Output:
 
     logical, pointer :: &
-         config_use_bergs ! flag to turn on / off iceberg model
+         config_use_bergs, & ! flag to turn on / off iceberg model
+         config_do_restart   ! flag if restart
 
     call MPAS_pool_get_config(domain % configs, "config_use_bergs", config_use_bergs)
+    call MPAS_pool_get_config(domain % configs, "config_do_restart", config_do_restart)
+
 
     if (config_use_bergs) then
 
        call mpas_timer_start("Berg initialization")
 
-       ! initialize calving fluxes
-       call seaice_init_berg_calving_fluxes(domain)
+       ! initial run
+       if (.not. config_do_restart) then
+
+          ! initialize calving fluxes
+          call seaice_init_berg_calving_fluxes(domain)
+
+       endif
 
        ! initialize velocity solver
        call seaice_init_berg_velocity_solver(domain)
