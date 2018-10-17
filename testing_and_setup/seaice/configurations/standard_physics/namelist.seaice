@@ -333,6 +333,7 @@
     config_berg_initial_vvelocity_geo = 0.0
     config_use_berg_velocity_solver = false
     config_berg_velocity_subcycle_number = 30
+    config_berg_mass_threshold = 1.0
     config_berg_ice_concentration_threshold = 0.9
     config_berg_ice_min_concentration_threshold = 0.15
     config_berg_ice_strength_threshold = 1000.0
