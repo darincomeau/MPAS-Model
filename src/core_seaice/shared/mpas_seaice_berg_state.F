@@ -784,7 +784,7 @@ contains
        call MPAS_pool_get_subpool(block % structs, "berg_state", bergStatePool)
        call MPAS_pool_get_array(bergStatePool, "bergDisplacedArea", bergDisplacedArea)
 
-       bergDisplacedArea(:) = 0.0_RKIND
+       bergDisplacedArea (:) = 0.0_RKIND
 
     block => block % next
     enddo
