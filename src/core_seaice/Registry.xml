@@ -1671,6 +1671,7 @@
 		<nml_option name="config_berg_initial_vvelocity_geo"	type="real"		default_value="0.0"/>
 		<nml_option name="config_use_berg_velocity_solver"	type="logical"		default_value="false"/>
 		<nml_option name="config_berg_velocity_subcycle_number"		type="integer"		default_value="30"		possible_values="any positive integer"/>
+		<nml_option name="config_berg_mass_threshold"		type="real"		default_value="1.0"		units="kg"/>
 		<nml_option name="config_berg_ice_concentration_threshold"	type="real"		default_value="0.9"/>
 		<nml_option name="config_berg_ice_min_concentration_threshold"	type="real"		default_value="0.15"/>
 		<nml_option name="config_berg_ice_strength_threshold"		type="real"		default_value="1000.0"/>

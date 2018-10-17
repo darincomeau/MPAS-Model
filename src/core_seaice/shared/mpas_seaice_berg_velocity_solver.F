@@ -33,10 +33,6 @@ module seaice_berg_velocity_solver
        seaice_run_berg_velocity_solver, &
        seaice_berg_forcing_for_ice
 
-  ! berg velocity solver constants
-  real(kind=RKIND), parameter, private :: &
-       bergMassMinimum = 0.01_RKIND
-
 contains
 
 !-----------------------------------------------------------------------
@@ -553,6 +549,7 @@ contains
          cellsOnVertex
 
     real(kind=RKIND), pointer :: &
+         config_berg_mass_threshold, & ! mass threshold for velocity solver
          config_berg_ice_concentration_threshold, & ! ice concentration threshold for capture
          config_berg_ice_strength_threshold         ! ice strength threshold for capture
 
@@ -568,6 +565,7 @@ contains
          nBergCategories, &
          vertexDegree
 
+    call MPAS_pool_get_config(domain % configs, "config_berg_mass_threshold", config_berg_mass_threshold)
     call MPAS_pool_get_config(domain % configs, "config_berg_ice_concentration_threshold", config_berg_ice_concentration_threshold)
     call MPAS_pool_get_config(domain % configs, "config_berg_ice_strength_threshold", config_berg_ice_strength_threshold)
 
@@ -606,7 +604,7 @@ contains
 
              if (interiorVertex(iVertex) == 1 .and. &
                 landIceMaskVertex(iVertex) == 0 .and. &
-                bergMassVertex(iCategory,iVertex) > bergMassMinimum) then
+                bergMassVertex(iCategory,iVertex) > config_berg_mass_threshold) then
 
                 ! this vertex has sufficient ice
                 bergVelocityMask(iCategory,iVertex) = 1
@@ -712,6 +710,7 @@ contains
          config_berg_horizontal_shape ! check horizontal shape assumption (tabular or cylindrical)
 
     real(kind=RKIND), pointer :: &
+         config_berg_mass_threshold, & ! mass threshold for velocity solver
          bergDensity ! berg density (kg/m^3)
 
     integer, pointer :: &
@@ -738,6 +737,7 @@ contains
          tabularToCylindricalConvFactor = 2.0_RKIND*sqrt(2.0_RKIND/(3.0_RKIND*pii))
 
     call MPAS_pool_get_config(domain % configs, "config_berg_horizontal_shape", config_berg_horizontal_shape)
+    call MPAS_pool_get_config(domain % configs, "config_berg_mass_threshold", config_berg_mass_threshold)
     call MPAS_pool_get_config(domain % configs, "config_berg_density", bergDensity)
 
     block => domain % blocklist
@@ -796,7 +796,7 @@ contains
 
           do iCategory = 1, nBergCategories
 
-          if (bergMassCategory(iCategory,iCell) > bergMassMinimum) then
+          if (bergMassCategory(iCategory,iCell) > config_berg_mass_threshold) then
 
              seaIceDraft = (seaiceDensitySnow*seaIceSnow + seaiceDensityIce*seaIceThick)/seaiceDensitySeaWater
 

@@ -33,8 +33,17 @@
         filename_template="output/output.$Y.nc"
         filename_interval="01-00-00_00:00:00"
         clobber_mode="replace_files"
-        output_interval="none" >
-
+        output_interval="00-01-00_00:00:00" >
+	<var name="xtime"/>
+	<var name="daysSinceStartOfSim"/>
+	<var name="iceAreaCell"/>
+	<var name="iceVolumeCell"/>
+	<var name="snowVolumeCell"/>
+	<var name="uVelocityGeo"/>
+	<var name="vVelocityGeo"/>
+	<var name="bergAreaCell"/>
+	<var name="bergMassCell"/>
+	<var name="bergFreshwaterFluxCell"/>
 </stream>
 
 <immutable_stream name="LYqSixHourlyForcing"
@@ -69,10 +78,10 @@
         clobber_mode="truncate"
         output_interval="none" >
 
-  <stream name="mesh"/>
-  <stream name="abort_contents"/>
-  <var name="daysSinceStartOfSim"/>
-  <var name="xtime"/>
+	<stream name="mesh"/>
+	<stream name="abort_contents"/>
+	<var name="daysSinceStartOfSim"/>
+	<var name="xtime"/>
 </stream>
 
 <stream name="abort"
@@ -82,10 +91,10 @@
         clobber_mode="truncate"
         output_interval="none" >
 
-  <stream name="mesh"/>
-  <stream name="abort_contents"/>
-  <var name="daysSinceStartOfSim"/>
-  <var name="xtime"/>
+	<stream name="mesh"/>
+	<stream name="abort_contents"/>
+	<var name="daysSinceStartOfSim"/>
+	<var name="xtime"/>
 </stream>
 
 <stream name="regionalStatisticsOutput"
@@ -201,8 +210,8 @@
         reference_time="0000-01-01_00:00:00"
         clobber_mode="truncate"
         packages="timeSeriesStatsMonthlyAMPKG"
-        input_interval="initial_only"
-        output_interval="stream:restart:output_interval" >
+        input_interval="none"
+        output_interval="none" >
 
 </stream>
 
@@ -269,8 +278,8 @@
 	<var name="meltPondDepthFinalArea"/>
 	<var name="meltPondLidThicknessFinalArea"/>
 	<var name="bergAreaCell"/>
-	<var name="bergFreshwaterFluxCell"/>
 	<var name="bergMassCell"/>
+	<var name="bergFreshwaterFluxCell"/>
 
 </stream>
 
