@@ -4032,10 +4032,10 @@
 
 	<!-- icebergs fluxes -->
 	<var_struct name="berg_fluxes" time_levs="1" packages="pkgBergs">
+		<var name="bergFreshwaterFlux"			type="real"	dimensions="nCells Time"					name_in_code="bergFreshwaterFlux"		units="kg/m^2/s"	packages="pkgBergs"/>
+		<var name="bergLatentHeatFlux"			type="real"	dimensions="nCells Time"					name_in_code="bergLatentHeatFlux"		units="J/m^2/s"		packages="pkgBergs"/>
 		<var name="bergFreshwaterFluxCategory"	type="real"	dimensions="nBergCategories nCells Time"	name_in_code="bergFreshwaterFluxCategory"	units="kg/m^2/s"	packages="pkgBergs"/>
 		<var name="bergLatentHeatFluxCategory"	type="real"	dimensions="nBergCategories nCells Time"	name_in_code="bergLatentHeatFluxCategory"	units="J/m^2/s"		packages="pkgBergs"/>
-		<var name="bergFreshwaterFluxCell"		type="real"	dimensions="nCells Time"					name_in_code="bergFreshwaterFluxCell"		units="kg/m^2/s"	packages="pkgBergs"/>
-		<var name="bergLatentHeatFluxCell"		type="real"	dimensions="nCells Time"					name_in_code="bergLatentHeatFluxCell"		units="J/m^2/s"		packages="pkgBergs"/>
 	</var_struct>
 
 #include "analysis_members/Registry_seaice_analysis_members.xml"

@@ -43,7 +43,7 @@
 	<var name="vVelocityGeo"/>
 	<var name="bergAreaCell"/>
 	<var name="bergMassCell"/>
-	<var name="bergFreshwaterFluxCell"/>
+	<var name="bergFreshwaterFlux"/>
 </stream>
 
 <immutable_stream name="LYqSixHourlyForcing"
@@ -279,7 +279,7 @@
 	<var name="meltPondLidThicknessFinalArea"/>
 	<var name="bergAreaCell"/>
 	<var name="bergMassCell"/>
-	<var name="bergFreshwaterFluxCell"/>
+	<var name="bergFreshwaterFlux"/>
 
 </stream>
 
