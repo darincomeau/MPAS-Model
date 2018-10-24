@@ -135,8 +135,8 @@ contains
          bergLatentHeatFluxCategory    ! latent heat flux due to berg decay (J/m^2/s)
 
     real(kind=RKIND), dimension (:), pointer :: &
-         bergFreshwaterFluxCell, & ! aggregate freshwater flux (kg/m^2/s)
-         bergLatentHeatFluxCell    ! aggregate latent heat flux (J/m^2/s)
+         bergFreshwaterFlux, & ! aggregate freshwater flux (kg/m^2/s)
+         bergLatentHeatFlux    ! aggregate latent heat flux (J/m^2/s)
 
     integer, pointer :: &
          nCellsSolve, &
@@ -160,8 +160,8 @@ contains
 
     call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFluxCategory", bergFreshwaterFluxCategory)
     call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFluxCategory", bergLatentHeatFluxCategory)
-    call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFluxCell", bergFreshwaterFluxCell)
-    call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFluxCell", bergLatentHeatFluxCell)
+    call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFlux", bergFreshwaterFlux)
+    call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFlux", bergLatentHeatFlux)
 
     do iCell = 1, nCellsSolve
 
@@ -178,8 +178,8 @@ contains
 
        enddo
 
-       bergFreshwaterFluxCell(iCell) = 0.0_RKIND
-       bergLatentHeatFluxCell(iCell) = 0.0_RKIND
+       bergFreshwaterFlux(iCell) = 0.0_RKIND
+       bergLatentHeatFlux(iCell) = 0.0_RKIND
 
     enddo
 
@@ -836,8 +836,8 @@ contains
 
     real(kind=RKIND), dimension(:), pointer :: &
          areaCell, &
-         bergFreshwaterFluxCell, & ! aggregate freshwater flux (kg/m^2/s)
-         bergLatentHeatFluxCell    ! aggregate latent heat flux (J/m^2/s)
+         bergFreshwaterFlux, & ! aggregate freshwater flux (kg/m^2/s)
+         bergLatentHeatFlux    ! aggregate latent heat flux (J/m^2/s)
 
     real(kind=RKIND), pointer :: &
          config_dt, &
@@ -870,8 +870,8 @@ contains
 
     call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFluxCategory", bergFreshwaterFluxCategory)
     call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFluxCategory", bergLatentHeatFluxCategory)
-    call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFluxCell", bergFreshwaterFluxCell)
-    call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFluxCell", bergLatentHeatFluxCell)
+    call MPAS_pool_get_array(bergFluxesPool, "bergFreshwaterFlux", bergFreshwaterFlux)
+    call MPAS_pool_get_array(bergFluxesPool, "bergLatentHeatFlux", bergLatentHeatFlux)
 
     do iCell = 1, nCellsSolve
 
@@ -888,8 +888,8 @@ contains
                                                          / (areaCell(iCell)*config_dt)
 
              ! aggregate quantities
-             bergFreshwaterFluxCell(iCell) = bergFreshwaterFluxCell(iCell) + bergFreshwaterFluxCategory(iCategory,iCell)
-             bergLatentHeatFluxCell(iCell) = bergLatentHeatFluxCell(iCell) + bergLatentHeatFluxCategory(iCategory,iCell)
+             bergFreshwaterFlux(iCell) = bergFreshwaterFlux(iCell) + bergFreshwaterFluxCategory(iCategory,iCell)
+             bergLatentHeatFlux(iCell) = bergLatentHeatFlux(iCell) + bergLatentHeatFluxCategory(iCategory,iCell)
 
           endif
 
