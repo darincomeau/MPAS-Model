@@ -3627,12 +3627,6 @@
 		<var name="bergFreshwaterFluxData"		type="real"	dimensions="nCells Time"		name_in_code="bergFreshwaterFluxData"/>
 	</var_struct>
 
-	<!-- fluxes from icebergs to ocean -->
-	<var_struct name="berg_fluxes" time_levs="1" packages="pkgBergs">
-		<var name="bergFreshwaterFlux"			type="real"	dimensions="nCells Time"		name_in_code="bergFreshwaterFlux"/>
-		<var name="bergLatentHeatFlux"			type="real"	dimensions="nCells Time"		name_in_code="bergLatentHeatFlux"/>
-	</var_struct>
-
 	<!-- ocean atmosphere interaction -->
 	<var_struct name="ocean_atmosphere" time_levs="1">
 		<var name="airStressOceanU"			type="real"	dimensions="nCells Time"		name_in_code="airStressOceanU"/>
