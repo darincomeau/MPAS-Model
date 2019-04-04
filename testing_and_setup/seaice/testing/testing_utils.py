@@ -188,7 +188,7 @@ def create_test_directory(directory):
 
 #-------------------------------------------------------------------------
 
-def run_model(runName, mpasDir, domainsDir, domain, configuration, nmlChanges, streamChanges, nProcs, logfile):
+def run_model(runName, mpasDir, domainsDir, domain, configuration, nmlChanges, streamChanges, nProcs, logfile, oversubscribe):
 
     # create development directory
     os.mkdir(runName)
@@ -208,7 +208,7 @@ def run_model(runName, mpasDir, domainsDir, domain, configuration, nmlChanges, s
     create_new_streams(mpasDir+"/testing_and_setup/seaice/configurations/"+configuration+"/streams.seaice", "streams.seaice", streamChanges)
 
     # run the model
-    returnCode = execute_model(nProcs, logfile)
+    returnCode = execute_model(nProcs, logfile, oversubscribe)
 
     # up one level
     os.chdir("..")
@@ -217,7 +217,40 @@ def run_model(runName, mpasDir, domainsDir, domain, configuration, nmlChanges, s
 
 #-------------------------------------------------------------------------
 
-def restart_model(runName, nmlChanges, streamChanges, nProcs, logfile):
+def get_domain(domainsDir, domain):
+
+    # create directories
+    if (not os.path.isdir("graphs")):
+        os.makedirs("graphs")
+
+    if (not os.path.isdir("forcing")):
+        os.makedirs("forcing")
+
+    # read in manifest
+    manifestFilename = domainsDir + "/" + domain + "/mpas_seaice_domain_manifest"
+
+    manifestFile = open(manifestFilename,"r")
+    manifestLines = manifestFile.readlines()
+    manifestFile.close()
+
+    # create sym links
+    for manifestLine in manifestLines:
+
+        inputManifestLine  = manifestLine.split()[0]
+        outputManifestLine = manifestLine.split()[1]
+
+        create_sym_link(domainsDir, domain, inputManifestLine, outputManifestLine)
+
+#-------------------------------------------------------------------------
+
+def create_sym_link(domainsDir, domain, inputManifestLine, outputManifestLine):
+
+    cmd = "ln -s %s/%s/%s %s" %(domainsDir, domain, inputManifestLine, outputManifestLine)
+    os.system(cmd)
+
+#-------------------------------------------------------------------------
+
+def restart_model(runName, nmlChanges, streamChanges, nProcs, logfile, oversubscribe):
 
     # move to run dir
     os.chdir(runName)
@@ -233,7 +266,7 @@ def restart_model(runName, nmlChanges, streamChanges, nProcs, logfile):
     create_new_streams("streams.seaice.prev", "streams.seaice", streamChanges)
 
     # run the model
-    returnCode = execute_model(nProcs, logfile)
+    returnCode = execute_model(nProcs, logfile, oversubscribe)
 
     # up one level
     os.chdir("..")
@@ -242,12 +275,15 @@ def restart_model(runName, nmlChanges, streamChanges, nProcs, logfile):
 
 #-------------------------------------------------------------------------
 
-def execute_model(nProcs, logfile):
+def execute_model(nProcs, logfile, oversubscribe=False):
 
     import subprocess
 
     # execute mpirun -np np seaice_model
-    process = subprocess.Popen(["mpirun", "-np", "%i" %(nProcs), "seaice_model"], stdout=logfile, stderr=logfile)
+    if (oversubscribe):
+        process = subprocess.Popen(["mpirun", "--oversubscribe", "-np", "%i" %(nProcs), "seaice_model"], stdout=logfile, stderr=logfile)
+    else:
+        process = subprocess.Popen(["mpirun", "-np", "%i" %(nProcs), "seaice_model"], stdout=logfile, stderr=logfile)
     returnCode = process.wait()
     logfile.flush()
     logfile.write("Return code: %i\n" %(returnCode))

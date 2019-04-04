@@ -87,7 +87,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine seaice_run_advection(domain, clock, ierr)
+  subroutine seaice_run_advection(domain, clock)
 
     use seaice_advection_upwind, only: &
          seaice_run_advection_upwind
@@ -103,9 +103,6 @@ contains
 
     type (MPAS_Clock_type), intent(in) :: &
          clock !< Input:
-
-    integer, intent(inout) :: &
-         ierr  !< Input/Output:
 
     logical, pointer :: &
          config_use_advection

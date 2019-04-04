@@ -1,10 +1,3 @@
-! Copyright (c) 2013,  Los Alamos National Security, LLC (LANS)
-! and the University Corporation for Atmospheric Research (UCAR).
-!
-! Unless noted otherwise source code is licensed under the BSD license.
-! Additional copyright and license information can be found in the LICENSE file
-! distributed with this code, or at http://mpas-dev.github.com/license.html
-!
 module seaice_core_interface
 
    use mpas_derived_types
@@ -552,7 +545,8 @@ module seaice_core_interface
 
           ! icebergs package
      logical, pointer :: &
-          config_use_bergs
+          config_use_bergs, &
+          config_use_data_icebergs
 
      logical, pointer :: &
           pkgBergsActive
@@ -564,8 +558,14 @@ module seaice_core_interface
      !-----------------------------------------------------------------------
 
      call MPAS_pool_get_config(configPool, "config_use_bergs", config_use_bergs)
+     call MPAS_pool_get_config(configPool, "config_use_data_icebergs", config_use_data_icebergs)
      call MPAS_pool_get_package(packagePool, "pkgBergsActive", pkgBergsActive)
-     pkgBergsActive = config_use_bergs
+     
+     if (config_use_forcing .or. config_use_data_icebergs) then
+
+        pkgBergsActive = .true.
+
+     endif
 
    end subroutine setup_packages_bergs!}}}
 
@@ -589,20 +589,28 @@ module seaice_core_interface
 
      logical, pointer :: &
           config_use_forcing, &
-          config_testing_system_test
+          config_use_data_icebergs, &
+          config_testing_system_test, &
+          config_use_snicar
 
      logical, pointer :: &
           pkgForcingActive, &
-          pkgTestingSystemTestActive
+          pkgTestingSystemTestActive, &
+          pkgSnicarActive
+
+     ierr = 0
+
+     ierr = 0
 
      ! pkgForcing
 
      call MPAS_pool_get_config(configPool, "config_use_forcing", config_use_forcing)
+     call MPAS_pool_get_config(configPool, "config_use_data_icebergs", config_use_data_icebergs)
 
      call MPAS_pool_get_package(packagePool, "pkgForcingActive", pkgForcingActive)
 
      ! see if we are using the forcing system
-     if (config_use_forcing) then
+     if (config_use_forcing .or. config_use_data_icebergs) then
 
         pkgForcingActive = .true.
 
@@ -616,10 +624,14 @@ module seaice_core_interface
 
      ! see if we are testing the testing system
      if (config_testing_system_test) then
-
         pkgTestingSystemTestActive = .true.
-
      endif
+
+     ! pkgSnicar
+     call MPAS_pool_get_config(configPool, "config_use_snicar", config_use_snicar)
+     call MPAS_pool_get_package(packagePool, "pkgSnicarActive", pkgSnicarActive)
+     ! see if we are using the snicar system
+      pkgSnicarActive = .true.
 
    end subroutine setup_packages_other!}}}
 
