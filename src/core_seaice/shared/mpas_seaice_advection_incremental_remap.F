@@ -2339,6 +2339,7 @@ contains
        domain,      &
        tracersHead, &
        clock,       &
+       ierr,        &
        timeLevelIn, &
        updateHaloInitIn,  &
        updateHaloFinalIn)
@@ -2356,6 +2357,9 @@ contains
 
     type (MPAS_Clock_type), intent(in) :: &
          clock     !< Input: clock
+
+    integer, intent(inout) :: &
+         ierr !< Input/Output: error code
 
     integer, intent(in), optional :: &
          timeLevelIn    !< Input: time level of input fields (1 or 2)
@@ -2749,6 +2753,7 @@ contains
        block,       &
        dt,          &
        tracersHead, &
+       ierr,        &
        timeLevelIn)
 
     ! in/out arguments

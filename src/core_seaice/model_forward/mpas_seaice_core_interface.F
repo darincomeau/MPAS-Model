@@ -561,7 +561,7 @@ module seaice_core_interface
      call MPAS_pool_get_config(configPool, "config_use_data_icebergs", config_use_data_icebergs)
      call MPAS_pool_get_package(packagePool, "pkgBergsActive", pkgBergsActive)
      
-     if (config_use_forcing .or. config_use_data_icebergs) then
+     if (config_use_bergs .or. config_use_data_icebergs) then
 
         pkgBergsActive = .true.
 

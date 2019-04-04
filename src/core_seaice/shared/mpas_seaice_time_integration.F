@@ -42,7 +42,8 @@ contains
   subroutine seaice_timestep(&
        domain, &
        clock, &
-       itimestep)!{{{
+       itimestep, &
+       ierr)!{{{
 
     use mpas_timer
 
@@ -82,6 +83,9 @@ contains
 
     integer, intent(in) :: &
          itimestep !< Input:
+
+    integer, intent(inout) :: &
+         ierr !< Input
 
     type(block_type), pointer :: &
          block
@@ -160,7 +164,7 @@ contains
        ! advection
        call mpas_timer_start("Advection")
        if (config_use_advection) &
-            call seaice_run_advection(domain, clock)
+            call seaice_run_advection(domain, clock, ierr)
        call mpas_timer_stop("Advection")
 
        ! ridging
