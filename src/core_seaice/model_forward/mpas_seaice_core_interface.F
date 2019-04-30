@@ -545,6 +545,7 @@ module seaice_core_interface
 
           ! icebergs package
      logical, pointer :: &
+          config_use_forcing, &
           config_use_bergs, &
           config_use_data_icebergs
 
@@ -557,11 +558,12 @@ module seaice_core_interface
      ! iceberg routines
      !-----------------------------------------------------------------------
 
+     call MPAS_pool_get_config(configPool, "config_use_forcing", config_use_forcing)
      call MPAS_pool_get_config(configPool, "config_use_bergs", config_use_bergs)
      call MPAS_pool_get_config(configPool, "config_use_data_icebergs", config_use_data_icebergs)
      call MPAS_pool_get_package(packagePool, "pkgBergsActive", pkgBergsActive)
      
-     if (config_use_bergs .or. config_use_data_icebergs) then
+     if (config_use_forcing .or. config_use_bergs .or. config_use_data_icebergs) then
 
         pkgBergsActive = .true.
 
