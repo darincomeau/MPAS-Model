@@ -392,9 +392,7 @@ module seaice_core
       integer, intent(in) :: itimestep
       character(len=*), intent(in) :: timeStamp
 
-       integer :: ierr
-
-      call seaice_timestep(domain, clock, itimestep, ierr)
+      call seaice_timestep(domain, clock, itimestep)
 
    end subroutine mpas_timestep
 

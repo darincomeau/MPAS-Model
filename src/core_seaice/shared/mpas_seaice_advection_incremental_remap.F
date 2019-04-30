@@ -2339,7 +2339,6 @@ contains
        domain,      &
        tracersHead, &
        clock,       &
-       ierr,        &
        timeLevelIn, &
        updateHaloInitIn,  &
        updateHaloFinalIn)
@@ -2357,9 +2356,6 @@ contains
 
     type (MPAS_Clock_type), intent(in) :: &
          clock     !< Input: clock
-
-    integer, intent(inout) :: &
-         ierr !< Input/Output: error code
 
     integer, intent(in), optional :: &
          timeLevelIn    !< Input: time level of input fields (1 or 2)
@@ -2453,6 +2449,7 @@ contains
        ! open to improvement
        call MPAS_dmpar_field_halo_exch(domain, 'u' // trim(tracersHead % rootName) // 'Velocity')
        call MPAS_dmpar_field_halo_exch(domain, 'v' // trim(tracersHead % rootName) // 'Velocity')
+
        call MPAS_pool_get_config(domain % configs, "config_use_halo_exch", config_use_halo_exch)
        if (config_use_halo_exch) then
 
@@ -2570,9 +2567,7 @@ contains
             domain, &
             block, &
             advectionTimeStep, &
-            tracersHead, &
-            ierr)
-       if (ierr > 0) exit
+            tracersHead)
 
        block  => block % next
 
@@ -2753,7 +2748,6 @@ contains
        block,       &
        dt,          &
        tracersHead, &
-       ierr,        &
        timeLevelIn)
 
     ! in/out arguments
@@ -2765,9 +2759,6 @@ contains
 
     real(kind=RKIND), intent(in) :: &
          dt           !< Input: time step
-
-    integer, intent(inout) :: &
-         ierr         !< Input/Output: error code
 
     type(tracer_type), intent(inout), pointer :: &
          tracersHead  !< Input/output: pointer to first element of linked list of tracers

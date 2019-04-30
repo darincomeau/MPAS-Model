@@ -137,7 +137,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine seaice_run_berg_dynamics(domain, clock, ierr)
+  subroutine seaice_run_berg_dynamics(domain, clock)
 
     use seaice_berg_velocity_solver, only: &
          seaice_run_berg_velocity_solver
@@ -150,9 +150,6 @@ contains
 
     type(MPAS_Clock_type), intent(in) :: &
          clock !< Input:
-
-    integer, intent(inout) :: &
-         ierr  !< Input/Output:
 
     logical, pointer :: &
          config_use_berg_velocity_solver, & ! indicates if berg velocity solver is used
@@ -184,7 +181,7 @@ contains
 
        ! advection by incremental remapping
        call mpas_timer_start("Berg advection")
-       if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock, ierr)
+       if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock)
        call mpas_timer_stop("Berg advection")
 
     else ! advection inside subcycling
@@ -198,7 +195,7 @@ contains
 
           ! advection by incremental remapping
           call mpas_timer_start("Berg advection")
-          if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock, ierr)
+          if (config_use_berg_advection) call seaice_run_berg_advection(domain, clock)
           call mpas_timer_stop("Berg advection")
 
        enddo ! iBergSubcycle
