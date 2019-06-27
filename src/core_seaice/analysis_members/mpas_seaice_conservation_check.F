@@ -1,10 +1,3 @@
-! Copyright (c) 2013,  Los Alamos National Security, LLC (LANS)
-! and the University Corporation for Atmospheric Research (UCAR).
-!
-! Unless noted otherwise source code is licensed under the BSD license.
-! Additional copyright and license information can be found in the LICENSE file
-! distributed with this code, or at http://mpas-dev.github.com/license.html
-!
 !|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
 !
 !  seaice_conservation_check
@@ -448,6 +441,8 @@ contains
       character(len=17) :: &
            formatString
 
+      err = 0
+
       call MPAS_pool_get_config(domain % blocklist % configs, "config_dt", dt)
       call MPAS_pool_get_config(domain % blocklist % configs, "config_AM_conservationCheck_write_to_logfile", &
                                                                config_AM_conservationCheck_write_to_logfile)
@@ -714,6 +709,8 @@ contains
       character(len=17) :: &
            formatString
 
+      err = 0
+
       call MPAS_pool_get_config(domain % blocklist % configs, "config_dt", dt)
       call MPAS_pool_get_config(domain % blocklist % configs, "config_AM_conservationCheck_write_to_logfile", &
                                                                config_AM_conservationCheck_write_to_logfile)
@@ -955,6 +952,8 @@ contains
 
       character(len=17) :: &
            formatString
+
+      err = 0
 
       call MPAS_pool_get_config(domain % blocklist % configs, "config_dt", dt)
       call MPAS_pool_get_config(domain % blocklist % configs, "config_AM_conservationCheck_write_to_logfile", &

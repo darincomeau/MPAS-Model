@@ -87,7 +87,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine seaice_run_advection(domain, clock, ierr)
+  subroutine seaice_run_advection(domain, clock)
 
     use seaice_advection_upwind, only: &
          seaice_run_advection_upwind
@@ -103,9 +103,6 @@ contains
 
     type (MPAS_Clock_type), intent(in) :: &
          clock !< Input:
-
-    integer, intent(inout) :: &
-         ierr  !< Input/Output:
 
     logical, pointer :: &
          config_use_advection
@@ -130,7 +127,7 @@ contains
           !           (Later, change volume to thickness throughout code?)
 
           call mpas_timer_start("advection incr remap")
-          call seaice_run_advection_incremental_remap(domain, iceTracersHead, clock, ierr)
+          call seaice_run_advection_incremental_remap(domain, iceTracersHead, clock)
           call mpas_timer_stop("advection incr remap")
 
           !TODO WHL - Convert ice/snow thickness to volume here

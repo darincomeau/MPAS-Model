@@ -91,7 +91,7 @@ contains
 !
 !-----------------------------------------------------------------------
 
-  subroutine seaice_run_berg_advection(domain, clock, ierr)
+  subroutine seaice_run_berg_advection(domain, clock)
 
     use seaice_advection_incremental_remap, only: &
          seaice_run_advection_incremental_remap
@@ -105,9 +105,6 @@ contains
     type(MPAS_Clock_type), intent(in) :: &
          clock !< Input:
 
-    integer, intent(inout) :: &
-         ierr  !< Input/Output:
-
     integer, pointer :: &
          nBergCategories
 
@@ -120,7 +117,6 @@ contains
        call seaice_run_advection_incremental_remap(domain, &
                                                    bergTracersHeadArray(iCategory) % tracerTypePtr, &
                                                    clock, &
-                                                   ierr, &
                                                    updateHaloInitIn = .true., &
                                                    updateHaloFinalIn = .true.)
 

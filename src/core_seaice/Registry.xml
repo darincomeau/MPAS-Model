@@ -1,5 +1,5 @@
 <?xml version="1.0"?>
-<registry model="mpas" core="seaice" core_abbrev="seaice" version="0.0.0">
+<registry model="mpas" core="seaice" core_abbrev="seaice" version="6.1">
 
 	<dims>
 		<dim name="nCells"
@@ -159,7 +159,7 @@
 			description="Number of dissolved organic carbon groups in use"
 		/>
 		<dim name="nDIC"
-			definition="0"
+			definition="1"
 			description="Number of dissolved inorganic carbon groups in use"
 		/>
 		<dim name="nDON"
@@ -287,9 +287,20 @@
 			units="unitless" description="The maximum number of points in any group."
 		/>
 		<dim name="nForcingGroupsMax"
-			definition="4"
+			definition="5"
 			description="The maximum number of forcing groups defined in the core."
 		/>
+		<dim name="nSpectralIntervalsSNICAR"
+		   definition="5"
+		   units="unitless"
+		   description="The number of shortwave spectral bands used in snow SNICAR model (1 visible band and 4 near-IR bands) for radiative transfer calculation"
+		/>
+		<dim name="nSnowGrainRadiusSNICAR"
+		   definition="1471"
+		   units="unitless"
+		   description="The number of snow grain radius used in SNICAR model, radius are ranging from 30 to 150 microns with 1 micron interval"
+		/>
+
 	</dims>
 
 	<nml_record name="seaice_model" in_defaults="true">
@@ -781,7 +792,7 @@
 			possible_values="positive real number less than 1"
 			icepack_name="grid_o_t"
 		/>
-		<nml_option name="config_bio_gravity_drainage_length_scale" type="real" default_value="0.024" units="m"
+		<nml_option name="config_bio_gravity_drainage_length_scale" type="real" default_value="20." units="m"
 			description="positive real number less than 1"
 			possible_values="Sets the gravity drainage length scale in the biological transport model"
 			icepack_name="l_sk"
@@ -801,7 +812,7 @@
 			possible_values="real between 0 and 1 or negative.  If negative, compute porosity from snow density"
 			icepack_name="phi_snow"
 		/>
-		<nml_option name="config_new_ice_fraction_biotracer" type="real" default_value="0.80" units="unitless"
+		<nml_option name="config_new_ice_fraction_biotracer" type="real" default_value="1.0" units="unitless"
 			description="Fraction of biological tracer retained as new sea ice is formed from ocean water"
 			possible_values="positive real number less than or equal to 1"
 			icepack_name="initbio_frac"
@@ -891,17 +902,17 @@
 			possible_values="positive real less than one"
 			icepack_name="fr_resp"
 		/>
-		<nml_option name="config_rapid_mobile_to_stationary_time" type="real" default_value="5200.0" units="seconds"
+		<nml_option name="config_rapid_mobile_to_stationary_time" type="real" default_value="3600.0" units="seconds"
 			description="Rapid adsorption timescale  "
 			possible_values="zero or positive real number"
 			icepack_name="tau_min"
 		/>
-		<nml_option name="config_long_mobile_to_stationary_time" type="real" default_value="173000.0" units="seconds"
+		<nml_option name="config_long_mobile_to_stationary_time" type="real" default_value="7776000.0" units="seconds"
 			description="Slow adsorption timescale"
 			possible_values="zero or positive real number"
 			icepack_name="tau_max"
 		/>
-		<nml_option name="config_algal_maximum_velocity" type="real" default_value="0.0000000111" units="m/s"
+		<nml_option name="config_algal_maximum_velocity" type="real" default_value="0.0000001" units="m/s"
 			description="Maximum speed at which diatoms can move"
 			possible_values="zero or positive real number "
 			icepack_name="algal_vel"
@@ -931,32 +942,32 @@
 			possible_values="positive real"
 			icepack_name="chlabs_phaeo"
 		/>
-		<nml_option name="config_light_attenuation_diatoms" type="real" default_value="0.8" units="1/(W/m^2)"
+		<nml_option name="config_light_attenuation_diatoms" type="real" default_value="0.3" units="1/(W/m^2)"
 			description="Controls the ability of diatoms to utilize light"
 			possible_values="positive real less than 1"
 			icepack_name="alpha2max_low_diatoms"
 		/>
-		<nml_option name="config_light_attenuation_small_plankton" type="real" default_value="0.67" units="1/(W/m^2)"
+		<nml_option name="config_light_attenuation_small_plankton" type="real" default_value="0.2" units="1/(W/m^2)"
 			description="Controls the ability of small plankton to utilize light"
 			possible_values="positive real less than 1"
 			icepack_name="alpha2max_low_sp"
 		/>
-		<nml_option name="config_light_attenuation_phaeocystis" type="real" default_value="0.67" units="1/(W/m^2)"
+		<nml_option name="config_light_attenuation_phaeocystis" type="real" default_value="0.17" units="1/(W/m^2)"
 			description="Controls the ability of phaeocystis to utilize light"
 			possible_values="positive real less than 1"
 			icepack_name="alpha2max_low_phaeo"
 		/>
-		<nml_option name="config_light_inhibition_diatoms" type="real" default_value="0.018" units="1/(W/m^2)"
+		<nml_option name="config_light_inhibition_diatoms" type="real" default_value="0.001" units="1/(W/m^2)"
 			description="Controls the strength of light inhibition to growth for diatoms"
 			possible_values="positive real less than 1"
 			icepack_name="beta2max_diatoms"
 		/>
-		<nml_option name="config_light_inhibition_small_plankton" type="real" default_value="0.0025" units="1/(W/m^2)"
+		<nml_option name="config_light_inhibition_small_plankton" type="real" default_value="0.001" units="1/(W/m^2)"
 			description="Controls the strength of light inhibition to growth for small plankton"
 			possible_values="positive real less than 1"
 			icepack_name="beta2max_sp"
 		/>
-		<nml_option name="config_light_inhibition_phaeocystis" type="real" default_value="0.01" units="1/(W/m^2)"
+		<nml_option name="config_light_inhibition_phaeocystis" type="real" default_value="0.04" units="1/(W/m^2)"
 			description="Controls the strength of light inhibition to growth for phaeocystis"
 			possible_values="positive real less than 1"
 			icepack_name="beta2max_phaeo"
@@ -966,12 +977,12 @@
 			possible_values="positive real"
 			icepack_name="mu_max_diatoms"
 		/>
-		<nml_option name="config_maximum_growth_rate_small_plankton" type="real" default_value="0.851" units="1/day"
+		<nml_option name="config_maximum_growth_rate_small_plankton" type="real" default_value="0.41" units="1/day"
 			description="Maximum growth rate for small plankton"
 			possible_values="positive real"
 			icepack_name="mu_max_sp"
 		/>
-		<nml_option name="config_maximum_growth_rate_phaeocystis" type="real" default_value="0.851" units="1/day"
+		<nml_option name="config_maximum_growth_rate_phaeocystis" type="real" default_value="0.63" units="1/day"
 			description="Maximum growth rate for phaeocystis"
 			possible_values="positive real"
 			icepack_name="mu_max_phaeo"
@@ -996,12 +1007,12 @@
 			possible_values="zero or positive real less than 1"
 			icepack_name="fr_graze_diatoms"
 		/>
-		<nml_option name="config_grazed_fraction_small_plankton" type="real" default_value="0.1" units="unitless"
+		<nml_option name="config_grazed_fraction_small_plankton" type="real" default_value="0.7" units="unitless"
 			description="Fraction of small plankton biomass grazed"
 			possible_values="zero or positive real less than 1"
 			icepack_name="fr_graze_sp"
 		/>
-		<nml_option name="config_grazed_fraction_phaeocystis" type="real" default_value="0.1" units="unitless"
+		<nml_option name="config_grazed_fraction_phaeocystis" type="real" default_value="0.7" units="unitless"
 			description="Fraction of phaeocystis biomass grazed"
 			possible_values="zero or positive real less than 1"
 			icepack_name="fr_graze_phaeo"
@@ -1181,12 +1192,12 @@
 			possible_values="zero or positive real less than 1"
 			icepack_name="fr_graze_e"
 		/>
-		<nml_option name="config_fraction_mortality_to_ammonium" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_fraction_mortality_to_ammonium" type="real" default_value="0.9" units="unitless"
 			description="Fraction of mortality to ammonium"
 			possible_values="zero or positive real less than 1"
 			icepack_name="fr_mort2min"
 		/>
-		<nml_option name="config_fraction_iron_remineralized" type="real" default_value="0.3" units="unitless"
+		<nml_option name="config_fraction_iron_remineralized" type="real" default_value="1.0" units="unitless"
 			description="Fraction of remineralized iron "
 			possible_values="zero or positive real less than or equal to 1"
 			icepack_name="fr_dFe"
@@ -1211,22 +1222,22 @@
 			possible_values="positive real"
 			icepack_name="max_dfe_doc1"
 		/>
-		<nml_option name="config_respiration_loss_to_DMSPd" type="real" default_value="0.75" units="unitless"
+		<nml_option name="config_respiration_loss_to_DMSPd" type="real" default_value="0.9" units="unitless"
 			description="Fraction of respiration loss as DMSPd"
 			possible_values="zero or positive real less than or equal to 1"
 			icepack_name="fr_resp_s"
 		/>
-		<nml_option name="config_DMSP_to_DMS_conversion_fraction" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_DMSP_to_DMS_conversion_fraction" type="real" default_value="0.7" units="unitless"
 			description="Fraction of conversion to DMS given high yield"
 			possible_values="zero or positive real less than or equal to 1"
 			icepack_name="y_sk_conv"
 		/>
-		<nml_option name="config_DMSP_to_DMS_conversion_time" type="real" default_value="3.0" units="day"
+		<nml_option name="config_DMSP_to_DMS_conversion_time" type="real" default_value="5.0" units="day"
 			description="Stefels conversion time"
 			possible_values="positive real"
 			icepack_name="t_sk_conv"
 		/>
-		<nml_option name="config_DMS_oxidation_time" type="real" default_value="10.0" units="day"
+		<nml_option name="config_DMS_oxidation_time" type="real" default_value="12.0" units="day"
 			description="DMS oxidation time"
 			possible_values="positive real"
 			icepack_name="t_sk_ox"
@@ -1236,12 +1247,12 @@
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="algaltype_diatoms"
 		/>
-		<nml_option name="config_mobility_type_small_plankton" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_small_plankton" type="real" default_value="0.0" units="unitless"
 			description="Transport type of small plankton"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="algaltype_sp"
 		/>
-		<nml_option name="config_mobility_type_phaeocystis" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_phaeocystis" type="real" default_value="0.0" units="unitless"
 			description="Transport type of phaeocystis"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="algaltype_phaeo"
@@ -1251,7 +1262,7 @@
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="nitratetype"
 		/>
-		<nml_option name="config_mobility_type_ammonium" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_ammonium" type="real" default_value="0.0" units="unitless"
 			description="Transport type of ammonium"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="ammoniumtype"
@@ -1266,32 +1277,32 @@
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="dmspptype"
 		/>
-		<nml_option name="config_mobility_type_DMSPd" type="real" default_value="-1.0" units="unitless"
+		<nml_option name="config_mobility_type_DMSPd" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dissolved DMSP"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="dmspdtye"
 		/>
-		<nml_option name="config_mobility_type_humics" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_humics" type="real" default_value="0.0" units="unitless"
 			description="Transport type of humics"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="humtypes"
 		/>
-		<nml_option name="config_mobility_type_saccharids" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_saccharids" type="real" default_value="0.0" units="unitless"
 			description="Transport type of poly/saccharids"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="doctype_s"
 		/>
-		<nml_option name="config_mobility_type_lipids" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_lipids" type="real" default_value="0.0" units="unitless"
 			description="Transport type of lipids"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="doctype_l"
 		/>
-		<nml_option name="config_mobility_type_proteins" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_proteins" type="real" default_value="0.0" units="unitless"
 			description="Transport type of proteins"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="dontype_protein"
 		/>
-		<nml_option name="config_mobility_type_dissolved_iron" type="real" default_value="0.5" units="unitless"
+		<nml_option name="config_mobility_type_dissolved_iron" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dissolved iron"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="fedtype_1"
@@ -1301,32 +1312,32 @@
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="feptype_1"
 		/>
-		<nml_option name="config_mobility_type_black_carbon1" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_black_carbon1" type="real" default_value="0.0" units="unitless"
 			description="Transport type of black carbon 1 pool"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_bc1"
 		/>
-		<nml_option name="config_mobility_type_black_carbon2" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_black_carbon2" type="real" default_value="0.0" units="unitless"
 			description="Transport type of black carbon 1 pool"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_bc2"
 		/>
-		<nml_option name="config_mobility_type_dust1" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_dust1" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dust pool 1"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_dust1"
 		/>
-		<nml_option name="config_mobility_type_dust2" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_dust2" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dust pool 2"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_dust2"
 		/>
-		<nml_option name="config_mobility_type_dust3" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_dust3" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dust pool 3"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_dust3"
 		/>
-		<nml_option name="config_mobility_type_dust4" type="real" default_value="1.0" units="unitless"
+		<nml_option name="config_mobility_type_dust4" type="real" default_value="0.0" units="unitless"
 			description="Transport type of dust pool 4"
 			possible_values="-1 = entirely in the mobile phase; 0 = retention dominated; 1 = release dominated; 0.5 = equal but rapid exchange; 2 = equal but slow exchange"
 			icepack_name="zaerotype_dust4"
@@ -1393,6 +1404,10 @@
 			description="Albedo parameterization type."
 			possible_values="'ccsm3' or 'constant'"
 			icepack_name="albedo_type"
+		/>
+		 <nml_option name="config_use_snicar" type="logical" default_value="false" units="unitless"
+			description="If true turn on snicar 5-band snow system"
+			possible_values="true or false"
 		/>
 		<nml_option name="config_visible_ice_albedo" type="real" default_value="0.78" units="unitless"
 			description="Visible ice albedo for ice thickness greater than config_variable_albedo_thickness_limit."
@@ -1638,6 +1653,10 @@
 		/>
 		<nml_option name="config_couple_biogeochemistry_fields" type="logical" default_value="false" units="unitless"
 			description=""
+			possible_values="true or false"
+		/>
+		<nml_option name="config_use_data_icebergs" type="logical" default_value="false" units="unitless"
+			description="Use data iceberg meltwater forcing"
 			possible_values="true or false"
 		/>
 	</nml_record>
@@ -1947,6 +1966,15 @@
 			<var name="oceanMixedLayerDepth"/>
 			<var name="oceanHeatFluxConvergence"/>
 		</stream>
+		<stream name="dataIcebergForcing"
+				type="input"
+				filename_template="forcing/data_icebergs.nc"
+				filename_interval="none"
+				input_interval="none"
+				clobber_mode="replace_files"
+				runtime_format="single_file">
+			<var name="bergFreshwaterFluxData"/>
+		</stream>
 
 		<!-- Aerosols input -->
 		<stream name="StandardAerosolsInput"
@@ -1970,6 +1998,27 @@
 			<var name="modalBCabsorptionParameter"/>
 			<var name="modalMassExtinctionCrossSection"/>
 			<var name="modalSingleScatterAlbedo"/>
+		</stream>
+
+	 	<stream name="SnicarInput"
+        			type="input"
+      				filename_template="snicar_optics_5bnd_snow_and_aerosols.nc"
+      				filename_interval="none"
+     			 	input_interval="initial_only"
+      				immutable="true">
+  			<var name="iceAsymmetryParameterDirect"/>
+  			<var name="iceAsymmetryParameterDiffuse"/>
+  			<var name="iceSingleScatterAlbedoDirect"/>
+  			<var name="iceSingleScatterAlbedoDiffuse"/>
+  			<var name="iceMassExtinctionCrossSectionDirect"/>
+  			<var name="iceMassExtinctionCrossSectionDiffuse"/>
+			<var name="modalAsymmetryParameter5band"/>
+			<var name="modalBCabsorptionParameter5band"/>
+			<var name="modalMassExtinctionCrossSection5band"/>
+			<var name="modalSingleScatterAlbedo5band"/>
+			<var name="aerosolAsymmetryParameter5band"/>
+			<var name="aerosolMassExtinctionCrossSection5band"/>
+			<var name="aerosolSingleScatterAlbedo5band"/>
 		</stream>
 
 		<stream name="pointLocationsInput"
@@ -2244,6 +2293,8 @@
 		<!-- forcing -->
 		<package name="pkgForcing" description="On if the framework forcing is being used"/>
 
+                <!-- Snicar -->
+                <package name="pkgSnicar" description="add snicar 5 bands snow SSP in CICE"/>
 	</packages>
 
 <!--TODO WHL - Convert iceVolume and snowVolume to iceThickness and snowThickness (and change the source code accordingly) -->
@@ -3571,6 +3622,11 @@
 		<var name="oceanHeatFluxIceBottom"		type="real"	dimensions="nCells Time"		name_in_code="oceanHeatFluxIceBottom"/>
 	</var_struct>
 
+	<!-- fluxes from data icebergs -->
+	<var_struct name="berg_forcing" time_levs="1" packages="pkgBergs">
+		<var name="bergFreshwaterFluxData"		type="real"	dimensions="nCells Time"		name_in_code="bergFreshwaterFluxData"/>
+	</var_struct>
+
 	<!-- ocean atmosphere interaction -->
 	<var_struct name="ocean_atmosphere" time_levs="1">
 		<var name="airStressOceanU"			type="real"	dimensions="nCells Time"		name_in_code="airStressOceanU"/>
@@ -3827,6 +3883,23 @@
 		<var name="testArrayRegression"		type="real"	dimensions="nCells Time"/>
 		<var name="testArrayParallelism"		type="real"	dimensions="nCells Time"/>
 		<var name="testArrayRestartability"		type="real"	dimensions="nCells Time"/>
+	</var_struct>
+
+	<!-- Snicar 5-band optical property varables -->
+	<var_struct name="snicar" time_levs="1" packages="pkgSnicar">
+		<var name="iceAsymmetryParameterDirect"	type="real"	 dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR" 	 name_in_code="iceAsymmetryParameterDirect"/>
+		<var name="iceAsymmetryParameterDiffuse" 	type="real" 	 dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR"	name_in_code="iceAsymmetryParameterDiffuse"/>
+		<var name="iceSingleScatterAlbedoDirect"	type="real"	dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR"	 name_in_code="iceSingleScatterAlbedoDirect"/>
+		<var name="iceSingleScatterAlbedoDiffuse"	 type="real"	 dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR"	 name_in_code="iceSingleScatterAlbedoDiffuse"/>
+		<var name="iceMassExtinctionCrossSectionDirect"		type="real"	 dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR"	 name_in_code="iceMassExtinctionCrossSectionDirect"/>
+		<var name="iceMassExtinctionCrossSectionDiffuse"	 type="real" 	dimensions="nSpectralIntervalsSNICAR nSnowGrainRadiusSNICAR"	name_in_code="iceMassExtinctionCrossSectionDiffuse"/>
+		<var name="aerosolMassExtinctionCrossSection5band"   type="real"    dimensions="nSpectralIntervalsSNICAR maxAerosolType"    name_in_code="aerosolMassExtinctionCrossSection5band"/>
+		<var name="aerosolSingleScatterAlbedo5band"   type="real"    dimensions="nSpectralIntervalsSNICAR maxAerosolType"    name_in_code="aerosolSingleScatterAlbedo5band"/>
+		<var name="aerosolAsymmetryParameter5band"   type="real"    dimensions="nSpectralIntervalsSNICAR maxAerosolType"    name_in_code="aerosolAsymmetryParameter5band"/>
+		<var name="modalMassExtinctionCrossSection5band"    type="real"    dimensions="nSpectralIntervalsSNICAR nModal1"    name_in_code="modalMassExtinctionCrossSection5band"/>
+		<var name="modalSingleScatterAlbedo5band"   type="real"    dimensions="nSpectralIntervalsSNICAR nModal1"    name_in_code="modalSingleScatterAlbedo5band"/>
+		<var name="modalAsymmetryParameter5band"    type="real"    dimensions="nSpectralIntervalsSNICAR nModal1"    name_in_code="modalAsymmetryParameter5band"/>
+		<var name="modalBCabsorptionParameter5band"    type="real"    dimensions="nSpectralIntervalsSNICAR nModal1 nModal2" name_in_code="modalBCabsorptionParameter5band"/>
 	</var_struct>
 
 	<!-- Point diagnostics -->
