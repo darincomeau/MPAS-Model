@@ -65,7 +65,25 @@ contains
     logical, pointer :: &
          config_berg_allow_rollover ! flag to turn on / off berg rollover due to instability
 
+    type(MPAS_pool_type), pointer :: &
+         bergVelocitySolverPool
+
+    real(kind=RKIND), dimension(:,:), pointer :: &
+         uBergVelocity, & ! berg velocity
+         vBergVelocity
+
+    call MPAS_pool_get_subpool(domain % blocklist % structs, "berg_velocity_solver", bergVelocitySolverPool)
+
+    call MPAS_pool_get_array(bergVelocitySolverPool, "uBergVelocity", uBergVelocity)
+    call MPAS_pool_get_array(bergVelocitySolverPool, "vBergVelocity", vBergVelocity)
+
     call MPAS_pool_get_config(domain % configs, "config_berg_allow_rollover", config_berg_allow_rollover)
+
+    ! halo exchange
+    call mpas_timer_start("Berg velocity solver halo")
+    call MPAS_dmpar_field_halo_exch(domain, 'uBergVelocity')
+    call MPAS_dmpar_field_halo_exch(domain, 'vBergVelocity')
+    call mpas_timer_stop("Berg velocity solver halo")
 
     block => domain % blocklist
     do while (associated(block))
