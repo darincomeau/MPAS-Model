@@ -1940,6 +1940,10 @@ contains
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergStressU", bergStressU)
        call MPAS_pool_get_array(bergVelocitySolverPool, "bergStressV", bergStressV)
 
+       ! initialize
+       bergStressU(:) = 0.0_RKIND
+       bergStressV(:) = 0.0_RKIND
+
        ! interpolate cell to vertex
        call seaice_interpolate_cell_to_vertex(&
             meshPool, &

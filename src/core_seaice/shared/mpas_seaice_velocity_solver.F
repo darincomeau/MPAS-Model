@@ -2731,7 +2731,8 @@ contains
 
     type(MPAS_pool_type), pointer :: &
          velocitySolverPool, &
-         icestatePool
+         icestatePool, &
+         bergVelocitySolverPool
 
     integer, dimension(:), pointer :: &
          solveVelocity
@@ -2751,7 +2752,9 @@ contains
          surfaceTiltForceV, &
          oceanStressU, &
          oceanStressV, &
-         oceanStressCoeff
+         oceanStressCoeff, &
+         bergStressU, &
+         bergStressV
 
     real(kind=RKIND), pointer :: &
          dynamicsTimeStep
@@ -2778,6 +2781,7 @@ contains
 
        call MPAS_pool_get_subpool(block % structs, "velocity_solver", velocitySolverPool)
        call MPAS_pool_get_subpool(block % structs, "icestate", icestatePool)
+       call MPAS_pool_get_subpool(block % structs, "berg_velocity_solver", bergVelocitySolverPool)
 
        call MPAS_pool_get_array(icestatePool, "totalMassVertex", totalMassVertex)
 
@@ -2798,6 +2802,9 @@ contains
        call MPAS_pool_get_array(velocitySolverPool, "oceanStressCoeff", oceanStressCoeff)
        call MPAS_pool_get_array(velocitySolverPool, "dynamicsTimeStep", dynamicsTimeStep)
 
+       call MPAS_pool_get_array(bergVelocitySolverPool, "bergStressU", bergStressU)
+       call MPAS_pool_get_array(bergVelocitySolverPool, "bergStressV", bergStressV)
+
        do iVertex = 1, nVerticesSolve
 
           if (solveVelocity(iVertex) == 1) then
@@ -2816,12 +2823,12 @@ contains
 
              ! right hand side of matrix solve
              rightHandSide(1) = stressDivergenceU(iVertex) + airStressVertexU(iVertex) + surfaceTiltForceU(iVertex) + &
-                  oceanStressCoeff(iVertex) * oceanStressU(iVertex) + &
+                  oceanStressCoeff(iVertex) * oceanStressU(iVertex) + bergStressU(iVertex) + &
                   (totalMassVertex(iVertex) * (numericalInertiaCoefficient * uVelocity(iVertex) + &
                   uVelocityInitial(iVertex))) / dynamicsTimeStep
 
              rightHandSide(2) = stressDivergenceV(iVertex) + airStressVertexV(iVertex) + surfaceTiltForceV(iVertex) + &
-                  oceanStressCoeff(iVertex) * oceanStressV(iVertex) + &
+                  oceanStressCoeff(iVertex) * oceanStressV(iVertex) + bergStressV(iVertex) + &
                   (totalMassVertex(iVertex) * (numericalInertiaCoefficient * vVelocity(iVertex) + &
                   vVelocityInitial(iVertex))) / dynamicsTimeStep
 
