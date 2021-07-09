@@ -187,7 +187,7 @@ contains
     ! berg decay and calving check
     if (config_use_bergs) then
        call mpas_timer_start("Berg post-dynamics")
-       call seaice_run_berg_postdynamics(domain, clock, itimestep)
+       call seaice_run_berg_postdynamics(domain, clock, itimestep, ierr)
        call mpas_timer_stop("Berg post-dynamics")
     endif
 

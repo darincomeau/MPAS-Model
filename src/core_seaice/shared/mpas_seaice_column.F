@@ -42,7 +42,8 @@ module seaice_column
        seaice_column_reinitialize_diagnostics_dynamics, &
        seaice_column_reinitialize_diagnostics_bgc, &
        seaice_column_coupling_prep, &
-       seaice_column_finalize
+       seaice_column_finalize, &
+       seaice_column_ridging_by_bergs
 
   ! tracer object
   type, private :: ciceTracerObjectType
@@ -13264,6 +13265,319 @@ contains
     end do
 
   end subroutine column_combine_snow_ice_tracers
+
+!|||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||||
+!
+!  seaice_column_ridging_by_bergs
+!
+!> \brief
+!> \author Darin Comeau, LANL
+!> \date 9th April 2018
+!> \details
+!>
+!
+!-----------------------------------------------------------------------
+
+  subroutine seaice_column_ridging_by_bergs(domain, ierr)
+
+    use ice_colpkg, only: &
+    !      colpkg_step_ridge, &
+         colpkg_get_warnings, &
+         colpkg_clear_warnings
+
+    use ice_bergs_mechred, only: &
+         ridge_ice_by_bergs
+
+    type(domain_type), intent(inout) :: domain
+
+    integer, intent(inout) :: ierr
+
+    type(block_type), pointer :: block
+
+    type(MPAS_pool_type), pointer :: &
+         mesh, &
+         icestate, &
+         tracers, &
+         tracers_aggregate, &
+         ponds, &
+         ocean_fluxes, &
+         ridging, &
+         aerosols, &
+         biogeochemistry, &
+         initial, &
+         velocity_solver, &
+         berg_state, &
+         berg_tracers_aggregate
+
+    ! configs
+    logical, pointer :: &
+         config_use_column_biogeochemistry, &
+         config_use_brine
+
+    real(kind=RKIND), pointer :: &
+         config_dt
+
+    ! integer, pointer :: &
+    !      config_dynamics_subcycle_number
+
+    character(len=strKIND), pointer :: &
+         config_ridging_participation_function, &
+         config_ridging_redistribution_function
+
+    real(kind=RKIND), pointer :: &
+         config_ridiging_efolding_scale
+
+    ! dimensions
+    integer, pointer :: &
+         nCellsSolve, &
+         nCategories, &
+         nIceLayers, &
+         nSnowLayers, &
+         nAerosols, &
+         nBioLayers
+
+    ! variables
+    real(kind=RKIND), dimension(:), pointer :: &
+         pondFreshWaterFlux, &
+         oceanFreshWaterFlux, &
+         oceanSaltFlux, &
+         oceanHeatFlux, &
+         iceAreaCell, &
+         ridgeConvergence, &
+         ridgeShear, &
+         openWaterArea, &
+         areaLossRidge, &
+         areaGainRidge, &
+         iceVolumeRidged, &
+         openingRateRidge, &
+         categoryThicknessLimits, &
+         zSalinityFlux, &
+         bergDisplacedArea, &
+         bergAreaCell
+
+    real(kind=RKIND), dimension(:,:), pointer :: &
+         oceanAerosolFlux, &
+         ridgeParticipationFunction, &
+         ratioRidgeThicknessToIce, &
+         fractionNewRidgeArea, &
+         fractionNewRidgeVolume, &
+         areaLossRidgeCategory, &
+         areaGainRidgeCategory, &
+         iceVolumeRidgedCategory, &
+         raftingIceArea, &
+         raftingIceVolume, &
+         oceanBioFluxes
+
+    real(kind=RKIND), dimension(:,:,:), pointer :: &
+         iceAreaCategory, &
+         iceVolumeCategory, &
+         snowVolumeCategory
+
+    ! integer, dimension(:,:), pointer :: &
+    !      newlyFormedIce
+
+    integer, dimension(:), pointer :: &
+         indexToCellID
+
+    real(kind=RKIND), pointer :: &
+         dynamicsTimeStep
+
+    ! local
+    integer :: &
+         iCell, &
+         iCategory
+
+    ! logical, dimension(:), allocatable :: &
+    !      newlyFormedIceLogical
+
+    ! real(kind=RKIND), dimension(:,:) :: &
+    !      bergTracerArray
+
+    logical :: &
+         abortFlag, &
+         setGetPhysicsTracers, &
+         setGetBGCTracers
+
+    character(len=strKIND) :: &
+         abortMessage, &
+         abortLocation
+
+    character(len=strKINDWarnings), dimension(:), allocatable :: &
+         warnings
+
+    block => domain % blocklist
+    do while (associated(block))
+
+       call MPAS_pool_get_subpool(block % structs, "mesh", mesh)
+       call MPAS_pool_get_subpool(block % structs, "tracers", tracers)
+       call MPAS_pool_get_subpool(block % structs, "tracers_aggregate", tracers_aggregate)
+       call MPAS_pool_get_subpool(block % structs, "icestate", icestate)
+       call MPAS_pool_get_subpool(block % structs, "ponds", ponds)
+       call MPAS_pool_get_subpool(block % structs, "ocean_fluxes", ocean_fluxes)
+       call MPAS_pool_get_subpool(block % structs, "ridging", ridging)
+       call MPAS_pool_get_subpool(block % structs, "aerosols", aerosols)
+       call MPAS_pool_get_subpool(block % structs, "biogeochemistry", biogeochemistry)
+       call MPAS_pool_get_subpool(block % structs, "initial", initial)
+       call MPAS_pool_get_subpool(block % structs, "velocity_solver", velocity_solver)
+       call MPAS_pool_get_subpool(block % structs, "berg_state", berg_state)
+       call MPAS_pool_get_subpool(block % structs, "berg_tracers_aggregate", berg_tracers_aggregate)
+
+       ! call MPAS_pool_get_config(block % configs, "config_dynamics_subcycle_number", config_dynamics_subcycle_number)
+       call MPAS_pool_get_config(block % configs, "config_use_column_biogeochemistry", config_use_column_biogeochemistry)
+       call MPAS_pool_get_config(block % configs, "config_use_brine", config_use_brine)
+       call MPAS_pool_get_config(block % configs, "config_ridging_participation_function", config_ridging_participation_function)
+       call MPAS_pool_get_config(block % configs, "config_ridging_redistribution_function", config_ridging_redistribution_function)
+       call MPAS_pool_get_config(block % configs, "config_ridiging_efolding_scale", config_ridiging_efolding_scale)
+
+       call MPAS_pool_get_array(velocity_solver, "dynamicsTimeStep", dynamicsTimeStep)
+
+       call MPAS_pool_get_dimension(mesh, "nCellsSolve", nCellsSolve)
+       call MPAS_pool_get_dimension(mesh, "nCategories", nCategories)
+       call MPAS_pool_get_dimension(mesh, "nIceLayers", nIceLayers)
+       call MPAS_pool_get_dimension(mesh, "nSnowLayers", nSnowLayers)
+       call MPAS_pool_get_dimension(mesh, "nAerosols", nAerosols)
+       ! call MPAS_pool_get_dimension(block % dimensions, "nBioLayers", nBioLayers)
+
+       call MPAS_pool_get_array(mesh, "indexToCellID", indexToCellID)
+
+       call MPAS_pool_get_array(tracers_aggregate, "iceAreaCell", iceAreaCell)
+
+       call MPAS_pool_get_array(icestate, "openWaterArea", openWaterArea)
+
+       call MPAS_pool_get_array(tracers, "iceAreaCategory", iceAreaCategory, 1)
+       call MPAS_pool_get_array(tracers, "iceVolumeCategory", iceVolumeCategory, 1)
+       call MPAS_pool_get_array(tracers, "snowVolumeCategory", snowVolumeCategory, 1)
+
+       call MPAS_pool_get_array(ocean_fluxes, "oceanFreshWaterFlux", oceanFreshWaterFlux)
+       call MPAS_pool_get_array(ocean_fluxes, "oceanSaltFlux", oceanSaltFlux)
+       call MPAS_pool_get_array(ocean_fluxes, "oceanHeatFlux", oceanHeatFlux)
+
+       call MPAS_pool_get_array(ridging, "ridgeConvergence", ridgeConvergence)
+       call MPAS_pool_get_array(ridging, "ridgeShear", ridgeShear)
+       call MPAS_pool_get_array(ridging, "areaLossRidge", areaLossRidge)
+       call MPAS_pool_get_array(ridging, "areaGainRidge", areaGainRidge)
+       call MPAS_pool_get_array(ridging, "iceVolumeRidged", iceVolumeRidged)
+       call MPAS_pool_get_array(ridging, "openingRateRidge", openingRateRidge)
+       call MPAS_pool_get_array(ridging, "ridgeParticipationFunction", ridgeParticipationFunction)
+       call MPAS_pool_get_array(ridging, "ratioRidgeThicknessToIce", ratioRidgeThicknessToIce)
+       call MPAS_pool_get_array(ridging, "fractionNewRidgeArea", fractionNewRidgeArea)
+       call MPAS_pool_get_array(ridging, "fractionNewRidgeVolume", fractionNewRidgeVolume)
+       call MPAS_pool_get_array(ridging, "areaLossRidgeCategory", areaLossRidgeCategory)
+       call MPAS_pool_get_array(ridging, "areaGainRidgeCategory", areaGainRidgeCategory)
+       call MPAS_pool_get_array(ridging, "iceVolumeRidgedCategory", iceVolumeRidgedCategory)
+       call MPAS_pool_get_array(ridging, "raftingIceArea", raftingIceArea)
+       call MPAS_pool_get_array(ridging, "raftingIceVolume", raftingIceVolume)
+
+       call MPAS_pool_get_array(aerosols, "oceanAerosolFlux", oceanAerosolFlux)
+
+       call MPAS_pool_get_array(ponds, "pondFreshWaterFlux", pondFreshWaterFlux)
+
+       ! call MPAS_pool_get_array(biogeochemistry, "newlyFormedIce", newlyFormedIce)
+       ! call MPAS_pool_get_array(biogeochemistry, "oceanBioFluxes", oceanBioFluxes)
+       ! call MPAS_pool_get_array(biogeochemistry, "zSalinityFlux", zSalinityFlux)
+
+       call MPAS_pool_get_array(initial, "categoryThicknessLimits", categoryThicknessLimits)
+
+       call MPAS_pool_get_array(berg_state, "bergDisplacedArea", bergDisplacedArea)
+
+       call MPAS_pool_get_array(berg_tracers_aggregate, "bergAreaCell", bergAreaCell)
+
+       ! ! newly formed ice
+       ! allocate(newlyFormedIceLogical(nCategories))
+
+       setGetPhysicsTracers = .true.
+       setGetBGCTracers     = config_use_column_biogeochemistry
+
+       do iCell = 1, nCellsSolve
+!dcmod - not needed, for bgc?
+          ! newly formed ice
+          ! do iCategory = 1, nCategories
+          !    newlyFormedIceLogical(iCategory) = (newlyFormedIce(iCategory,iCell) == 1)
+          ! enddo ! iCategory
+
+          ! set the category tracer array
+          call set_cice_tracer_array_category(block, ciceTracerObject, iCell, setGetPhysicsTracers, setGetBGCTracers)
+
+          abortFlag = .false.
+          abortMessage = ""
+!dcmod temporary so as to not update
+          ! bergTracerArray = ciceTracerObject % tracerArrayCategory
+
+          call colpkg_clear_warnings()
+          call ridge_ice_by_bergs(&
+               dynamicsTimeStep, &
+               bergDisplacedArea(iCell), &
+               nCategories, &
+               nAerosols, &
+               nIceLayers, &
+               nSnowLayers, &
+               ciceTracerObject % nTracers, &
+               categoryThicknessLimits, &
+               iceAreaCategory(1,:,iCell), &
+!               bergTracerArray, & ! trcrn !dcmod is there reason this needs to be temporary array?
+                ciceTracerObject % tracerArrayCategory, & ! trcrn !dcmod is there reason this needs to be temporary array?
+               iceVolumeCategory(1,:,iCell), &
+               snowVolumeCategory(1,:,iCell), &
+               openWaterArea(iCell), &
+               bergAreaCell(iCell), &
+               ciceTracerObject % parentIndex, & ! trcr_depend
+               ciceTracerObject % firstAncestorMask, & ! trcr_base
+               ciceTracerObject % ancestorNumber, & !n_trcr_strata
+               ciceTracerObject % ancestorIndices, & !nt_strata
+               abortFlag, & ! move these at bottom
+               abortMessage, &
+               config_cice_int("config_ridging_participation_function", config_ridging_participation_function), &
+               config_cice_int("config_ridging_redistribution_function", config_ridging_redistribution_function), &
+               config_ridiging_efolding_scale, & ! dcmod change
+               config_use_brine, &
+               areaLossRidge(iCell), &
+               areaGainRidge(iCell), &
+               iceVolumeRidged(iCell), &
+               openingRateRidge(iCell), &
+               pondFreshWaterFlux(iCell), &
+               oceanFreshWaterFlux(iCell), &
+               oceanHeatFlux(iCell), &
+               oceanAerosolFlux(:,iCell), &
+               ridgeParticipationFunction(:,iCell), &
+               ratioRidgeThicknessToIce(:,iCell), &
+               fractionNewRidgeArea(:,iCell), &
+               fractionNewRidgeVolume(:,iCell), &
+               areaLossRidgeCategory(:,iCell), &
+               areaGainRidgeCategory(:,iCell), &
+               iceVolumeRidgedCategory(:,iCell), &
+               raftingIceArea(:,iCell), &
+               raftingIceVolume(:,iCell))
+
+          call colpkg_get_warnings(warnings)
+          call column_write_warnings(warnings)
+
+          ! ! update
+          ! do iCategory = 1, nCategories
+          !    newlyFormedIce(iCategory,iCell) = 0
+          !    if (newlyFormedIceLogical(iCategory)) newlyFormedIce(iCategory,iCell) = 1
+          ! enddo ! iCategory
+
+          ! ! get category tracer array
+          ! call get_cice_tracer_array_category(block, ciceTracerObject, iCell, setGetPhysicsTracers, setGetBGCTracers)
+
+          ! code abort
+          if (abortFlag) then
+             call mpas_log_write("column_ridging_by_bergs: "//trim(abortMessage) , messageType=MPAS_LOG_ERR)
+             call mpas_log_write("iCell: $i", messageType=MPAS_LOG_ERR, intArgs=(/indexToCellID(iCell)/))
+             ierr = SEAICE_ERROR_COL_RIDGING
+             call seaice_critical_error_write_block(domain, block)
+             return
+          endif
+
+       enddo ! iCell
+
+       ! ! newly formed ice
+       ! deallocate(newlyFormedIceLogical)
+
+       block => block % next
+    enddo
+
+  end subroutine seaice_column_ridging_by_bergs
 
 !-----------------------------------------------------------------------
 ! Warning messages

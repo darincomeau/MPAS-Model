@@ -348,6 +348,7 @@
     config_berg_advection_outside_velocity_subcycling = false
     config_berg_update_open_water = false
     config_berg_seaice_interaction = false
+    config_berg_ridge_seaice = false
 /
 &AM_highFrequencyOutput
     config_AM_highFrequencyOutput_enable = false
